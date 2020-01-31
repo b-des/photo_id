@@ -8,9 +8,8 @@ from math import degrees
 import matplotlib.pyplot as plt
 import base64
 import FaceShapeDetector.manipulate as manipulate
-
 # load the image
-imagepath = "./selfie-iphone-removebg-preview.png"
+imagepath = "./test.jpg"
 # haarcascade for detecting faces
 # link = https://github.com/opencv/opencv/tree/master/data/haarcascades
 face_cascade_path = "./data/haarcascade_frontalface_default.xml"
@@ -37,7 +36,7 @@ gray = cv2.cvtColor((image), cv2.COLOR_BGR2GRAY)
 
 _, binary = cv2.threshold(gray, 225, 255, cv2.THRESH_BINARY_INV)
 plt.imshow(binary, cmap="gray")
-# plt.show()
+#plt.show()
 
 contours, hierarchy = cv2.findContours(binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 contours = contours[0]
@@ -257,7 +256,7 @@ window_width = lengthOriginalHead / k / aspect_ratio
 results = cv2.resize(results, (int(k*width), int(k*height)), interpolation = cv2.INTER_CUBIC)
 
 rows, cols, channels = results.shape
-face = results[topHeadLine:height-topHeadLine, 0:width]
+face = results[0:height, 0:width]
 
 img = cv2.addWeighted(blank_image2, 0.4, face, .6, 0)
 # blank_image2 = manipulate.overlay_transparent(blank_image2, results, 0, 0, (width, height))
