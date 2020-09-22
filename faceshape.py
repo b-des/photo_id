@@ -1,15 +1,16 @@
-# importing the libraries
-import numpy as np  # for mathematical calculations
-import cv2  # for face detection and other image operations
-import dlib  # for detection of facial landmarks ex:nose,jawline,eyes
-from sklearn.cluster import KMeans  # for clustering
-import math
-from math import degrees
+import cv2
+import dlib
+import imutils
 import matplotlib.pyplot as plt
-import base64
-import FaceShapeDetector.manipulate as manipulate
+import numpy as np
+from PIL import Image as PillowImage, ImageDraw
+from sklearn.cluster import KMeans
+import app as ptp
+from utils import extract_left_eye_center, extract_right_eye_center, get_rotation_matrix
+from app import config
+
 # load the image
-imagepath = "./test.jpg"
+imagepath = "./me.jpg"
 # haarcascade for detecting faces
 # link = https://github.com/opencv/opencv/tree/master/data/haarcascades
 face_cascade_path = "./data/haarcascade_frontalface_default.xml"
@@ -18,44 +19,69 @@ face_cascade_path = "./data/haarcascade_frontalface_default.xml"
 predictor_path = "./data/shape_predictor_68_face_landmarks.dat"
 
 # create the haar cascade for detecting face and smile
-faceCascade = cv2.CascadeClassifier(face_cascade_path)
+faceCascade = cv2.CascadeClassifier(config.FACE_CASCADE_FILE_PATH)
 
 # create the landmark predictor
-predictor = dlib.shape_predictor(predictor_path)
+predictor = dlib.shape_predictor(config.SHAPE_PREDICTOR_FILE_PATH)
+
+detector = dlib.get_frontal_face_detector()
 
 # read the image
-image = cv2.imread(imagepath)
-# resizing the image to 000 cols nd 500 rows
-# image = cv2.resize(image, (500, 500))
-# making another copy
-original = image.copy()
+original_image = cv2.imread(imagepath)
 
-image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+original_image = imutils.resize(original_image, height=ptp.FINAL_PHOTO_HEIGHT)
+
+if 1 == 2:
+    # make mask of where the transparent bits are
+    trans_mask = original_image[:, :, 2] == 0
+
+    # replace areas of transparency with white and not transparent
+    original_image[trans_mask] = [255, 255, 255]
+
+    # new image without alpha channel...
+    original_image = cv2.cvtColor(original_image, cv2.COLOR_BGRA2BGR)
+
+
+image = cv2.cvtColor(original_image, cv2.COLOR_BGR2RGB)
+
 # convert the image to grayscale
 gray = cv2.cvtColor((image), cv2.COLOR_BGR2GRAY)
 
-_, binary = cv2.threshold(gray, 225, 255, cv2.THRESH_BINARY_INV)
-plt.imshow(binary, cmap="gray")
-#plt.show()
+dets = detector(gray, 1)
 
+for i, det in enumerate(dets):
+    shape = predictor(image, det)
+    left_eye = extract_left_eye_center(shape)
+    right_eye = extract_right_eye_center(shape)
+
+    M = get_rotation_matrix(left_eye, right_eye)
+    image = cv2.warpAffine(image, M, (image.shape[1], image.shape[0]), flags=cv2.INTER_CUBIC,
+                           borderMode=cv2.BORDER_CONSTANT, borderValue=(255, 255, 255))
+
+gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+_, binary = cv2.threshold(gray, 225, 255, cv2.THRESH_BINARY_INV)
+
+# get contours of the face
 contours, hierarchy = cv2.findContours(binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 contours = contours[0]
-
 image = cv2.drawContours(image, contours, -1, (0, 255, 0), 2)
 
 x, y, w, h = cv2.boundingRect(contours)
 
 cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+plt.imshow(image)
+plt.show()
 image = image[y:y + h, x:x + w]
-original = original[y:y + h, x:x + w]
 gray = gray[y:y + h, x:x + w]
 
-topHead = ((0, 0), (0 + w, 0))
-# cv2.imshow('output', image)
-plt.imshow(image)
-#plt.show()
+topHead = ((0, 0), (w, 0))
+center_of_face = 0
+
+plt.imshow(original_image)
+# plt.show()
 # cv2.waitKey(0)
-#exit()
+# exit()
 
 # apply a Gaussian blur with a 3 x 3 kernel to help remove high frequency noise
 gauss = cv2.GaussianBlur(gray, (3, 3), 0)
@@ -68,6 +94,7 @@ faces = faceCascade.detectMultiScale(
     minSize=(100, 100),
     flags=cv2.CASCADE_SCALE_IMAGE
 )
+
 # Detect faces in the image
 print("found {0} faces!".format(len(faces)))
 
@@ -93,13 +120,13 @@ for (x, y, w, h) in faces:
     
 cv2.imshow("Landmarks by DLib", landmark)
 """
-# making another copy  for showing final results
-results = image.copy()
+# making another copy  for showing final result
+result = image.copy()
 
 for (x, y, w, h) in faces:
 
     # making temporary copy
-    temp = original.copy()
+    temp = image.copy()
     # getting area of interest from image i.e., forehead (25% of face)
     forehead = temp[y:y + int(0.25 * h), x:x + w]
     rows, cols, bands = forehead.shape
@@ -130,141 +157,111 @@ for (x, y, w, h) in faces:
         # enters if when change in pixel color is detected
         if forehead[forehead_mid[1], forehead_mid[0] - i].all() != pixel_value.all():
             lef = forehead_mid[0] - i
-            break;
+            break
     left = [lef, forehead_mid[1]]
     rig = 0
     for i in range(0, cols):
         # enters if when change in pixel color is detected
         if forehead[forehead_mid[1], forehead_mid[0] + i].all() != pixel_value.all():
             rig = forehead_mid[0] + i
-            break;
+            break
     right = [rig, forehead_mid[1]]
 
 # drawing line1 on forehead with circles
 # specific landmarks are used.
 line1 = np.subtract(right + y, left + x)[0]
-# cv2.line(results, tuple(x + left), tuple(y + right), color=(0, 255, 0), thickness=2)
+# cv2.line(result, tuple(x + left), tuple(y + right), color=(0, 255, 0), thickness=2)
 
-cv2.line(results, topHead[0], topHead[1], color=(0, 255, 0), thickness=2)
+cv2.line(result, topHead[0], topHead[1], color=(0, 255, 0), thickness=2)
 
 # drawing line 2 with circles
 linepointleft = (landmarks[1, 0], landmarks[1, 1])
 linepointright = (landmarks[15, 0], landmarks[15, 1])
 line2 = np.subtract(linepointright, linepointleft)[0]
-cv2.line(results, linepointleft, linepointright, color=(0, 255, 0), thickness=2)
+cv2.line(result, linepointleft, linepointright, color=(0, 255, 0), thickness=2)
 
-cv2.circle(results, linepointleft, 5, color=(255, 0, 0), thickness=-1)
-cv2.circle(results, linepointright, 5, color=(255, 0, 0), thickness=-1)
+cv2.circle(result, linepointleft, 5, color=(255, 0, 0), thickness=-1)
+cv2.circle(result, linepointright, 5, color=(255, 0, 0), thickness=-1)
 
 # drawing line 3 with circles
 linepointleft = (landmarks[3, 0], landmarks[3, 1])
 linepointright = (landmarks[13, 0], landmarks[13, 1])
 line3 = np.subtract(linepointright, linepointleft)[0]
-cv2.line(results, linepointleft, linepointright, color=(0, 255, 0), thickness=2)
+cv2.line(result, linepointleft, linepointright, color=(0, 255, 0), thickness=2)
 
-cv2.circle(results, linepointleft, 5, color=(255, 0, 0), thickness=-1)
-cv2.circle(results, linepointright, 5, color=(255, 0, 0), thickness=-1)
+cv2.circle(result, linepointleft, 5, color=(255, 0, 0), thickness=-1)
+cv2.circle(result, linepointright, 5, color=(255, 0, 0), thickness=-1)
 
 # drawing line 4 with circles
+center_of_face = landmarks[8, 0]
 linepointbottom = (landmarks[8, 0], landmarks[8, 1])
 linepointtop = (landmarks[8, 0], topHead[0][1])
 line4 = np.subtract(linepointbottom, linepointtop)[1]
-cv2.line(results, linepointtop, linepointbottom, color=(0, 255, 0), thickness=2)
+cv2.line(result, linepointtop, linepointbottom, color=(0, 255, 0), thickness=2)
 
-cv2.circle(results, linepointtop, 5, color=(255, 0, 0), thickness=-1)
-cv2.circle(results, linepointbottom, 5, color=(255, 0, 0), thickness=-1)
+cv2.circle(result, linepointtop, 5, color=(255, 0, 0), thickness=-1)
+cv2.circle(result, linepointbottom, 5, color=(255, 0, 0), thickness=-1)
 # print(line1,line2,line3,line4)
 
 
-# draw a rectangle around the faces
-cv2.rectangle(results, (x, topHead[0][1]), (x + w, linepointbottom[1]), (0, 255, 255), 2)
+# draw a rectangle around the face
+cv2.rectangle(result, (x, topHead[0][1]), (x + w, linepointbottom[1]), (0, 255, 255), 2)
 
-lengthOriginalHead = linepointbottom[1] - topHead[0][1];
-
-similarity = np.std([line1, line2, line3])
-# print("similarity=",similarity)
-ovalsimilarity = np.std([line2, line4])
-# print('diam=',ovalsimilarity)
-
-# we use arcustangens for angle calculation
-ax, ay = landmarks[3, 0], landmarks[3, 1]
-bx, by = landmarks[4, 0], landmarks[4, 1]
-cx, cy = landmarks[5, 0], landmarks[5, 1]
-dx, dy = landmarks[6, 0], landmarks[6, 1]
-
-alpha0 = math.atan2(cy - ay, cx - ax)
-alpha1 = math.atan2(dy - by, dx - bx)
-alpha = alpha1 - alpha0
-angle = abs(degrees(alpha))
-angle = 180 - angle
-
-for i in range(1):
-    if similarity < 10:
-        if angle < 160:
-            print('squared shape.Jawlines are more angular')
-            break
-        else:
-            print('round shape.Jawlines are not that angular')
-            break
-    if line3 > line1:
-        if angle < 160:
-            print('triangle shape.Forehead is more wider')
-            break
-    if ovalsimilarity < 10:
-        print('diamond shape. line2 & line4 are similar and line2 is slightly larger')
-        break
-    if line4 > line2:
-        if angle < 160:
-            print('rectangular. face length is largest and jawline are angular ')
-            break
-        else:
-            print('oblong. face length is largest and jawlines are not angular')
-            break
-    print("Damn! Contact the developer")
-
-output = np.concatenate((original, results), axis=1)
-
-plt.imshow(output)
-#plt.show()
-
-scaller = 100
-width = int(3 * scaller)
-height = int(4 * scaller)
-topHeadLine = int(.4 * scaller)
-bottomHeadLine = topHeadLine + int(2.5 * scaller)
+original_head_height = linepointbottom[1] - topHead[0][1]
 
 # create blank image
-blank_image2 = 255 * np.ones(shape=[height, width, 3], dtype=np.uint8)
+background = 255 * np.ones(shape=[ptp.FINAL_PHOTO_HEIGHT, ptp.FINAL_PHOTO_WIDTH, 3], dtype=np.uint8)
 
 # Draw top head line
-cv2.line(blank_image2, (0, topHeadLine), (width, topHeadLine), color=(0, 255, 0), thickness=2)
-
+cv2.line(background, (0, ptp.TOP_HEAD_LINE), (ptp.FINAL_PHOTO_WIDTH, ptp.TOP_HEAD_LINE), color=(0, 255, 0), thickness=2)
 # Draw bottom head line
-cv2.line(blank_image2, (0, bottomHeadLine), (width, bottomHeadLine), color=(0, 255, 255), thickness=2)
-x_offset = y_offset = 0
+cv2.line(background, (0, ptp.BOTTOM_HEAD_LINE), (ptp.FINAL_PHOTO_WIDTH, ptp.BOTTOM_HEAD_LINE), color=(0, 255, 255),
+         thickness=2)
 
+# Draw vertical head line
+cv2.line(background, (int(ptp.FINAL_PHOTO_WIDTH / 2), 0), (int(ptp.FINAL_PHOTO_WIDTH / 2), ptp.FINAL_PHOTO_HEIGHT),
+         color=(0, 255, 255),
+         thickness=2)
 
-# blank_image2[y_offset:y_offset+results.shape[0], x_offset:x_offset+results.shape[1]] = results
-lengthFinalHead = bottomHeadLine - topHeadLine
-print(lengthOriginalHead, lengthFinalHead)
-k = lengthOriginalHead / lengthFinalHead
-
-height, width = blank_image2.shape[:2]
-print(height, width)
+# background2[y_offset:y_offset+result.shape[0], x_offset:x_offset+result.shape[1]] = result
+needed_head_height = ptp.BOTTOM_HEAD_LINE - ptp.TOP_HEAD_LINE
+print(original_head_height, needed_head_height)
+k = needed_head_height / original_head_height
+print(k)
 aspect_ratio = float(image.shape[1]) / float(image.shape[0])
-window_width = lengthOriginalHead / k / aspect_ratio
-results = cv2.resize(results, (int(k*width), int(k*height)), interpolation = cv2.INTER_CUBIC)
 
-rows, cols, channels = results.shape
-face = results[0:height, 0:width]
+# offset along the x-axis to place the face at the center of canvas
+result = imutils.translate(result, int(result.shape[1] / 2 - center_of_face), 0)
+# result = cv2.rectangle(result, (0, 0), (result.shape[1], ptp.TOP_HEAD_LINE), color=(255, 255, 255), thickness=-1)
 
-img = cv2.addWeighted(blank_image2, 0.4, face, .6, 0)
-# blank_image2 = manipulate.overlay_transparent(blank_image2, results, 0, 0, (width, height))
-plt.imshow(img)
+# resize image by the highest side
+result = imutils.resize(result, height=int(result.shape[0] * k))
+
+# cv2.line(result, (0, ptp.TOP_HEAD_LINE), (ptp.FINAL_PHOTO_WIDTH, ptp.TOP_HEAD_LINE), color=(0, 0, 255), thickness=2)
+# cv2.line(result, (0, ptp.BOTTOM_HEAD_LINE), (ptp.FINAL_PHOTO_WIDTH, ptp.BOTTOM_HEAD_LINE), color=(0, 255, 255), thickness=2)
+
+
+rows, cols, channels = result.shape
+offset_x = int((result.shape[1] - ptp.FINAL_PHOTO_WIDTH) / 2)
+offset_y = 0
+# result = result[offset_y:ptp.FINAL_PHOTO_HEIGHT, offset_x:ptp.FINAL_PHOTO_WIDTH + offset_x]
+
+# result = cv2.addWeighted(background, 0, face, 1, 0)
+# result = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+cv2.imwrite("./me-1.jpg", result)
+
+result = PillowImage.fromarray(result)
+background = PillowImage.fromarray(background)
+
+background.paste(result, (-offset_x, ptp.TOP_HEAD_LINE))
+
+d = ImageDraw.Draw(background)
+d.line([(0, ptp.BOTTOM_HEAD_LINE), (ptp.FINAL_PHOTO_WIDTH, ptp.BOTTOM_HEAD_LINE)], fill='red', width=2)
+
+plt.imshow(background)
 plt.colorbar()
 plt.show()
 
-
-retval, buffer = cv2.imencode('.jpg', blank_image2)
-b64 = base64.b64encode(buffer)
-print(b64)
+# retval, buffer = cv2.imencode('.jpg', background2)
+# b64 = base64.b64encode(buffer)
+# print(b64)

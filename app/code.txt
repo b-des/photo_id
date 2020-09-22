@@ -1,0 +1,45 @@
+
+similarity = np.std([line1, line2, line3])
+# print("similarity=",similarity)
+ovalsimilarity = np.std([line2, line4])
+# print('diam=',ovalsimilarity)
+
+# we use arcustangens for angle calculation
+ax, ay = landmarks[3, 0], landmarks[3, 1]
+bx, by = landmarks[4, 0], landmarks[4, 1]
+cx, cy = landmarks[5, 0], landmarks[5, 1]
+dx, dy = landmarks[6, 0], landmarks[6, 1]
+
+alpha0 = math.atan2(cy - ay, cx - ax)
+alpha1 = math.atan2(dy - by, dx - bx)
+alpha = alpha1 - alpha0
+angle = abs(degrees(alpha))
+angle = 180 - angle
+
+for i in range(1):
+    if similarity < 10:
+        if angle < 160:
+            print('squared shape.Jawlines are more angular')
+            break
+        else:
+            print('round shape.Jawlines are not that angular')
+            break
+    if line3 > line1:
+        if angle < 160:
+            print('triangle shape.Forehead is more wider')
+            break
+    if ovalsimilarity < 10:
+        print('diamond shape. line2 & line4 are similar and line2 is slightly larger')
+        break
+    if line4 > line2:
+        if angle < 160:
+            print('rectangular. face length is largest and jawline are angular ')
+            break
+        else:
+            print('oblong. face length is largest and jawlines are not angular')
+            break
+    print("Damn! Contact the developer")
+
+#output = np.concatenate((copy_image, result), axis=1)
+#plt.imshow(output)
+#plt.show()

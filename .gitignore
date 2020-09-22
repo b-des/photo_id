@@ -1,4 +1,6 @@
 __pycache__/
 venv
 .idea
-data/shape_predictor_68_face_landmarks.dat
+data/*.dat
+*.jpg
+*.png
