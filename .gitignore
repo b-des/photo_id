@@ -3,5 +3,5 @@ venv
 env
 .idea
 data/*.dat
-*.jpg
-*.png
+/samples/**
+!/samples/test.jpg
