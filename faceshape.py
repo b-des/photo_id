@@ -6,17 +6,14 @@ import numpy as np
 from PIL import Image as PillowImage, ImageDraw
 from sklearn.cluster import KMeans
 import app as ptp
-from utils import extract_left_eye_center, extract_right_eye_center, get_rotation_matrix
+from app.utils import extract_left_eye_center, extract_right_eye_center, get_rotation_matrix
 from app import config
+import time
 
+start_time = time.time()
 # load the image
-imagepath = "./me.jpg"
-# haarcascade for detecting faces
-# link = https://github.com/opencv/opencv/tree/master/data/haarcascades
-face_cascade_path = "./data/haarcascade_frontalface_default.xml"
-# .dat file for detecting facial landmarks
-# download file path = http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2
-predictor_path = "./data/shape_predictor_68_face_landmarks.dat"
+imagepath = "./samples/me.jpg"
+
 
 # create the haar cascade for detecting face and smile
 faceCascade = cv2.CascadeClassifier(config.FACE_CASCADE_FILE_PATH)
@@ -29,7 +26,7 @@ detector = dlib.get_frontal_face_detector()
 # read the image
 original_image = cv2.imread(imagepath)
 
-original_image = imutils.resize(original_image, height=ptp.FINAL_PHOTO_HEIGHT)
+#original_image = imutils.resize(original_image, height=ptp.FINAL_PHOTO_HEIGHT)
 
 if 1 == 2:
     # make mask of where the transparent bits are
@@ -70,18 +67,12 @@ image = cv2.drawContours(image, contours, -1, (0, 255, 0), 2)
 x, y, w, h = cv2.boundingRect(contours)
 
 cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
-plt.imshow(image)
-plt.show()
 image = image[y:y + h, x:x + w]
 gray = gray[y:y + h, x:x + w]
 
 topHead = ((0, 0), (w, 0))
 center_of_face = 0
 
-plt.imshow(original_image)
-# plt.show()
-# cv2.waitKey(0)
-# exit()
 
 # apply a Gaussian blur with a 3 x 3 kernel to help remove high frequency noise
 gauss = cv2.GaussianBlur(gray, (3, 3), 0)
@@ -224,6 +215,7 @@ cv2.line(background, (int(ptp.FINAL_PHOTO_WIDTH / 2), 0), (int(ptp.FINAL_PHOTO_W
          thickness=2)
 
 # background2[y_offset:y_offset+result.shape[0], x_offset:x_offset+result.shape[1]] = result
+
 needed_head_height = ptp.BOTTOM_HEAD_LINE - ptp.TOP_HEAD_LINE
 print(original_head_height, needed_head_height)
 k = needed_head_height / original_head_height
@@ -247,8 +239,8 @@ offset_y = 0
 # result = result[offset_y:ptp.FINAL_PHOTO_HEIGHT, offset_x:ptp.FINAL_PHOTO_WIDTH + offset_x]
 
 # result = cv2.addWeighted(background, 0, face, 1, 0)
-# result = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
-cv2.imwrite("./me-1.jpg", result)
+result = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+cv2.imwrite("./samples/me-1.jpg", result)
 
 result = PillowImage.fromarray(result)
 background = PillowImage.fromarray(background)
@@ -258,6 +250,9 @@ background.paste(result, (-offset_x, ptp.TOP_HEAD_LINE))
 d = ImageDraw.Draw(background)
 d.line([(0, ptp.BOTTOM_HEAD_LINE), (ptp.FINAL_PHOTO_WIDTH, ptp.BOTTOM_HEAD_LINE)], fill='red', width=2)
 
+#background.save("./samples/me-1.jpg")
+
+print("--- %s seconds ---" % (time.time() - start_time))
 plt.imshow(background)
 plt.colorbar()
 plt.show()

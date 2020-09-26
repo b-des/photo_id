@@ -14,6 +14,8 @@ def create_app(config=None, app_name=__name__):
         template_folder="templates",
     )
 
+    app.config.from_object("app.config")
+
     blueprints = BLUEPRINTS
     blueprints_fabrics(app, blueprints)
     error_pages_fabrics(app)
