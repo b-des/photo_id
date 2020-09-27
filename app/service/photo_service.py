@@ -56,7 +56,7 @@ class PhotoService:
 
         # Morph close and invert image
         kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
-        close = 255 - cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel, iterations=2)
+        close = 225 - cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel, iterations=2)
 
         # get contours of the objects
         contours, hierarchy = cv2.findContours(close, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
