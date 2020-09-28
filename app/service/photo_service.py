@@ -30,6 +30,16 @@ class PhotoService:
         self.image = cv2.imread(config.TEST_IMAGE)
         self.image = imutils.url_to_image(image_url)
 
+        # replace transparent background with white color
+        # make mask of where the transparent bits are
+        trans_mask = self.image[:, :, 2] == 0
+
+        # replace areas of transparency with white and not transparent
+        self.image[trans_mask] = [255, 255, 255]
+
+        # new image without alpha channel...
+        self.image = cv2.cvtColor(self.image, cv2.COLOR_BGRA2BGR)
+
         # convert to RGB scheme
         self.image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
 
@@ -47,19 +57,22 @@ class PhotoService:
                                         flags=cv2.INTER_CUBIC,
                                         borderMode=cv2.BORDER_CONSTANT, borderValue=(255, 255, 255))
 
-    def detect_face(self):
+    def detect_face(self, use_morphology=False):
         # convert the image to grayscale
         gray_copy = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
         gauss = cv2.GaussianBlur(gray_copy, (3, 3), 0)
         # get binary image from grayscale image
         _, binary = cv2.threshold(gauss, 235, 255, cv2.THRESH_BINARY_INV)
 
-        # Morph close and invert image
-        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
-        close = 225 - cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel, iterations=2)
+        if use_morphology is True:
+            # Morph close and invert image
+            kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+            binary = 225 - cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel, iterations=2)
 
         # get contours of the objects
-        contours, hierarchy = cv2.findContours(close, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        contours, hierarchy = cv2.findContours(binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        if len(contours) != 1:
+            return []
         contours = contours[0]
 
         # for contour in contours:
@@ -68,10 +81,12 @@ class PhotoService:
         x, y, w, h = cv2.boundingRect(contours)
         cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-        # crop image by contours(cut object from the image)
-        self.image = image[y:y + h, x:x + w]
         # get gray copy
         gray_copy = gray_copy[y:y + h, x:x + w]
+
+        #plt.imshow(binary)
+        #plt.colorbar()
+        #plt.show()
 
         # apply a Gaussian blur with a 3 x 3 kernel to help remove high frequency noise
         gauss = cv2.GaussianBlur(gray_copy, (3, 3), 0)
@@ -86,6 +101,10 @@ class PhotoService:
         )
 
         print("found {0} faces!".format(len(faces)))
+
+        if len(faces) == 1:
+            # crop image by contours(cut object from the image)
+            self.image = image[y:y + h, x:x + w]
         return faces
 
     def detect_landmarks(self, face):

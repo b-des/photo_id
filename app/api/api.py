@@ -28,6 +28,12 @@ def render_photo():
     photo_service = PhotoService(body['url'])
     photo_service.auto_align_face()
     faces = photo_service.detect_face()
+    # if can't find face or found more than one face
+    # try again using morphology transformation(e.g. smoothes small objects)
+    if len(faces) == 0 or len(faces) > 1:
+        print("Can't detect exact face, trying again with morphology transformation")
+        faces = photo_service.detect_face(use_morphology=True)
+
     if len(faces) == 0:
         return jsonify(error="no_face"), 200
     elif len(faces) > 1:
