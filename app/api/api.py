@@ -12,12 +12,6 @@ def index():
     return render_template('index.html')
 
 
-def serialize_sets(obj):
-    if isinstance(obj, set):
-        return list(obj)
-
-    return obj
-
 @api.route('/render-photo', methods=['POST'])
 @cross_origin()
 def render_photo():
@@ -25,7 +19,11 @@ def render_photo():
     print(body)
     if 'url' not in body or body['url'] is None:
         return jsonify(error="Missing required parameter 'url'"), 400
-    photo_service = PhotoService(body['url'])
+
+    if body['dimensions'] is None:
+        return jsonify(error="Missing required object 'dimensions'"), 400
+
+    photo_service = PhotoService(body['url'], dimensions=body['dimensions'])
     photo_service.auto_align_face()
     faces = photo_service.detect_face()
     # if can't find face or found more than one face
@@ -39,10 +37,23 @@ def render_photo():
     elif len(faces) > 1:
         return jsonify(error="more_one_faces"), 200
     photo_service.detect_landmarks(faces[0])
-    photo_service.generate_photo_by_params(config.FINAL_PHOTO_WIDTH, config.FINAL_PHOTO_HEIGHT,
-                                           config.TOP_HEAD_LINE, config.BOTTOM_HEAD_LINE)
-    size = None
-    if 'size' in body and body['size'] is not None:
-        size = (int(body['size']), int(body['size']))
-    print(photo_service.get_result(size=size).decode('ascii'))
-    return jsonify(error="", result=photo_service.get_result(size=size).decode('ascii')), 200
+    d = body['dimensions']
+    photo_service.generate_photo_with_size(d['width'], d['height'],
+                                           int(d['crown']), int(d['chin']))
+    preview_size = None
+    if 'previewSize' in body and body['previewSize'] is not None:
+        preview_size = (int(body['previewSize']), int(body['previewSize']))
+
+    return jsonify(error="", result=photo_service.get_result(size=preview_size).decode('ascii')), 200
+
+
+@api.route('/save-photo-b64', methods=['POST'])
+@cross_origin()
+def save_base64_image():
+    body = request.json
+    print(body)
+    if 'b64' not in body or body['b64'] is None:
+        return jsonify(error="Missing required parameter 'b64'"), 400
+
+    PhotoService.save_base64_to_image(body['b64'])
+    return jsonify(error="", result='success'), 200

@@ -1,4 +1,5 @@
 import base64
+import io
 import os
 import time
 from io import BytesIO
@@ -17,11 +18,13 @@ import matplotlib.pyplot as plt
 
 class PhotoService:
     image = []
+    document_dimensions = {}
     original_head_height = 0
     center_of_face = 0
 
-    def __init__(self, image_url):
+    def __init__(self, image_url, dimensions):
         print("Gonna to do hard task")
+        self.document_dimensions = dimensions
         self.face_cascade = cv2.CascadeClassifier(config.FACE_CASCADE_FILE_PATH)
         self.shape_predictor = dlib.shape_predictor(config.SHAPE_PREDICTOR_FILE_PATH)
         self.frontal_face_detector = dlib.get_frontal_face_detector()
@@ -208,7 +211,7 @@ class PhotoService:
             plt.colorbar()
             plt.show()
 
-    def generate_photo_by_params(self, width, height, top_head_line, bottom_head_line):
+    def generate_photo_with_size(self, width, height, top_head_line, bottom_head_line):
         # create blank image
         background = 255 * np.ones(shape=[height, width, 3], dtype=np.uint8)
         # draw top head line
@@ -260,16 +263,20 @@ class PhotoService:
             plt.colorbar()
             plt.show()
 
-    def sleep(self):
-        time.sleep(5)
-
     def get_result(self, size=None):
-        if size is not None:
+        if size is not None and size[0] > 0:
             self.image.thumbnail(size, PillowImage.ANTIALIAS)
         buffered = BytesIO()
         self.image.save(buffered, format="JPEG")
         img_str = base64.b64encode(buffered.getvalue())
         return img_str
+
+    @classmethod
+    def save_base64_to_image(cls, base64_string):
+        img_data = base64.b64decode(base64_string.replace("data:image/png;base64,", ""))
+        image = PillowImage.open(io.BytesIO(img_data))
+        image = image.convert('RGB')
+        image.save('./samples/result.jpg', quality=100, dpi=(600, 600))
 
     def __del__(self):
         print("Class {} was deleted".format(self.__module__.__str__()))
