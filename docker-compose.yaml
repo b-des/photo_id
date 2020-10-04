@@ -5,6 +5,7 @@ services:
     environment:
       - environment=prod
       - REMOVE_BG_API_KEY=${REMOVE_BG_API_KEY}
+      - HANDLER_URL=${HANDLER_URL}
     build: .
     command: gunicorn --bind 0.0.0.0:6000 run:app
     restart: always
