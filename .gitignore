@@ -5,3 +5,4 @@ env
 data/*.dat
 /samples/**
 !/samples/test.jpg
+error.log

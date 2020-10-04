@@ -1,5 +1,12 @@
+import os
+import shutil
+
 import numpy as np
 import cv2
+import requests
+from PIL import Image
+
+from app import config
 
 LEFT_EYE_INDICES = [36, 37, 38, 39, 40, 41]
 RIGHT_EYE_INDICES = [42, 43, 44, 45, 46, 47]
@@ -53,3 +60,31 @@ def get_rotation_matrix(p1, p2):
 def crop_image(image, det):
     left, top, right, bottom = rect_to_tuple(det)
     return image[top:bottom, left:right]
+
+
+def save_tmp_file(uid, image: Image, file_name='blank'):
+    tmp_dir = '{}/{}'.format(config.TMP_IMAGE_PATH, uid)
+    if not os.path.exists(tmp_dir):
+        os.mkdir(tmp_dir)
+    photo_name = '{}/{}'.format(tmp_dir, file_name)
+    image.save(photo_name, quality=100, dpi=(600, 600))
+    return photo_name
+
+
+def send_file_over_http(host, file_path, uid, photo_name="blank.jpg"):
+    no_bg_photo = open(file_path, 'rb')
+    data = {
+        'uid': uid,
+        'photo_name': photo_name
+    }
+    files = {
+        'photo': no_bg_photo,
+    }
+    try:
+        result = requests.post('{}/{}'.format(host, config.HANDLER_URL), files=files, data=data)
+        result.raise_for_status()
+    except Exception:
+        return {}
+    finally:
+        shutil.rmtree(os.path.dirname(file_path))
+    return result.json()

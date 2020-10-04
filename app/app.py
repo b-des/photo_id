@@ -1,36 +1,39 @@
 import os
 from http import HTTPStatus
+
+from .config import ROOT_DIR
 from .api import api
 from .frontend import frontend
+from .static import static
 from flask import Flask, render_template, abort, jsonify
 
-BLUEPRINTS = [api, frontend]
+BLUEPRINTS = [api, frontend, static]
 
 
 def create_app(config=None, app_name=__name__):
     app = Flask(
         app_name,
-        static_folder=os.path.join(os.path.dirname(__file__), "..", "static"),
+        static_folder=os.path.join(ROOT_DIR, "static"),
         template_folder="templates",
     )
 
     app.config.from_object("app.config")
 
     blueprints = BLUEPRINTS
-    blueprints_fabrics(app, blueprints)
-    error_pages_fabrics(app)
+    register_blueprints(app, blueprints)
+    register_error_pages(app)
 
     return app
 
 
-def blueprints_fabrics(app, blueprints):
+def register_blueprints(app, blueprints):
     """Configure blueprints"""
 
     for blueprint in blueprints:
         app.register_blueprint(blueprint)
 
 
-def error_pages_fabrics(app):
+def register_error_pages(app):
     # HTTP error pages definitions
 
     @app.errorhandler(403)

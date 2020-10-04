@@ -30,6 +30,8 @@ COPY ./app ./app
 COPY ./data ./data
 COPY ./static ./static
 COPY ./samples ./samples
+COPY ./fonts ./fonts
+RUN mkdir ./tmp
 
 ENV environment=production
 
