@@ -78,7 +78,7 @@ def send_file_over_http(host, file_path, uid, photo_name="blank.jpg"):
         'photo_name': photo_name
     }
     files = {
-        'photo': no_bg_photo,
+        'file': no_bg_photo,
     }
     host = '{}/{}'.format(host, config.HANDLER_URL)
     try:
