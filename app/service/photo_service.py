@@ -290,14 +290,11 @@ class PhotoService:
         if not os.path.exists(tmp_dir):
             os.mkdir(tmp_dir)
         photo_name = '{}/no-bg.jpg'.format(tmp_dir)
-        if config.REMOVE_BG_API_KEY is not None and config.REMOVE_BG_API_KEY != "":
-            remove_bg = RemoveBg(config.REMOVE_BG_API_KEY, "")
-            remove_bg.remove_background_from_img_url(image_url, new_file_name=photo_name, bg_color='white')
-        else:
-            img = imutils.url_to_image(image_url)
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-            img = PillowImage.fromarray(img)
-            img.save(photo_name, quality=100)
+
+        img = imutils.url_to_image(image_url)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img = PillowImage.fromarray(img)
+        img.save(photo_name, quality=100)
 
         result = send_file_over_http(host=cls.host, file_path=photo_name, uid=uid, photo_name='no-bg.jpg')
         return result
