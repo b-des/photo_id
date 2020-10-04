@@ -29,13 +29,5 @@ COPY ./run.py .
 COPY ./app ./app
 COPY ./data ./data
 COPY ./static ./static
-COPY ./samples ./samples
 COPY ./fonts ./fonts
-RUN mkdir ./tmp
-
-ENV environment=production
-
-EXPOSE 5000
-
-#CMD [ "python", "./run.py" ]
-CMD ["flask", "run", "--host", "0.0.0.0"]
+RUN mkdir /tmp/photo-id

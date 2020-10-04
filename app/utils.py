@@ -80,8 +80,9 @@ def send_file_over_http(host, file_path, uid, photo_name="blank.jpg"):
     files = {
         'photo': no_bg_photo,
     }
+    host = '{}/{}'.format(host, config.HANDLER_URL)
     try:
-        result = requests.post('{}/{}'.format(host, config.HANDLER_URL), files=files, data=data)
+        result = requests.post(host, files=files, data=data)
         result.raise_for_status()
     except Exception:
         return {}
