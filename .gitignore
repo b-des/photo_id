@@ -3,7 +3,6 @@ venv
 env
 .env
 .idea
-data/*.dat
 /samples/**
 !/samples/test.jpg
 error.log
