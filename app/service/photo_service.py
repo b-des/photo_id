@@ -5,7 +5,7 @@ import shutil
 import textwrap
 import time
 from io import BytesIO
-
+import logging
 import cv2
 import dlib
 import imutils

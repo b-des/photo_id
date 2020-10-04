@@ -54,7 +54,8 @@ def render_photo():
     if uid is None:
         # remove background from photo
         remove_bg_result = PhotoService.remove_photo_bg(image_url=body['url'])
-        image_url = remove_bg_result['url']
+        return remove_bg_result, 200
+        #image_url = remove_bg_result['url']
     # create instance of service
     # this service responsible for image manipulation
     photo_service = PhotoService(image_url=image_url, dimensions=body['dimensions'], debug=debug or False)
