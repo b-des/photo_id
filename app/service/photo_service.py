@@ -74,7 +74,7 @@ class PhotoService:
         gray_copy = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
         gauss = cv2.GaussianBlur(gray_copy, (3, 3), 0)
         # get binary image from grayscale image
-        _, binary = cv2.threshold(gauss, 235, 255, cv2.THRESH_BINARY_INV)
+        _, binary = cv2.threshold(gauss, 225, 255, cv2.THRESH_BINARY_INV)
 
         if use_morphology is True:
             # Morph close and invert image
@@ -108,7 +108,7 @@ class PhotoService:
         # detect faces in the image
         faces = self.face_cascade.detectMultiScale(
             gauss,
-            scaleFactor=1.05,
+            scaleFactor=1.3,
             minNeighbors=5,
             minSize=(100, 100),
             flags=cv2.CASCADE_SCALE_IMAGE
@@ -304,7 +304,7 @@ class PhotoService:
     def remove_photo_bg(cls, image_url):
         uid = uuid.uuid4()
 
-        tmp_dir = '{}/{}'.format(config.TMP_IMAGE_PATH, uid)
+        tmp_dir = config.TMP_IMAGE_PATH.format(uid)
 
         no_bg_photo_name = '{}.{}'.format(config.NO_BG_PHOTO_NAME, config.DEFAULT_PHOTO_EXT)
         original_photo_name = '{}.{}'.format(config.ORIGINAL_PHOTO_NAME, config.DEFAULT_PHOTO_EXT)
@@ -312,26 +312,28 @@ class PhotoService:
         no_bg_photo_path = '{}/{}'.format(tmp_dir, no_bg_photo_name)
         original_photo_path = '{}/{}'.format(tmp_dir, original_photo_name)
 
-        #if config.REMOVE_BG_API_KEY is not None and config.REMOVE_BG_API_KEY != "":
-        #    remove_bg = RemoveBg(config.REMOVE_BG_API_KEY, "")
-        #    remove_bg.remove_background_from_img_url(image_url, new_file_name=no_bg_photo_path, bg_color='white')
-        #else:
-
+        # save original image in target directory
         img = imutils.url_to_image(image_url)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         img = PillowImage.fromarray(img)
-
         save_tmp_file(uid, img, original_photo_name)
         send_file_over_http(host=cls.host, file_path=original_photo_path, uid=uid, photo_name=original_photo_name)
 
-        save_tmp_file(uid, img, no_bg_photo_name)
+        # remove background if key is present
+        if config.REMOVE_BG_API_KEY is not None and config.REMOVE_BG_API_KEY != "":
+            remove_bg = RemoveBg(config.REMOVE_BG_API_KEY, "")
+            remove_bg.remove_background_from_img_url(image_url, new_file_name=no_bg_photo_path, bg_color='white')
+        else:
+            save_tmp_file(uid, img, no_bg_photo_name)
+
+        # save image without background in target directory
         result = send_file_over_http(host=cls.host, file_path=no_bg_photo_path, uid=uid, photo_name=no_bg_photo_name)
         return result
 
     @classmethod
     def add_watermark(cls, uid, text='Demo'):
         start_time = time.time()
-        tmp_dir = '{}/{}'.format(config.TMP_IMAGE_PATH, uid)
+        tmp_dir = config.TMP_IMAGE_PATH.format(uid)
         photo_name = '{}/no-bg.jpg'.format(tmp_dir)
         new_photo_name = '{}/new-no-bg.jpg'.format(tmp_dir)
         img = PillowImage.open(photo_name)

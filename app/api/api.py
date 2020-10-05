@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify
 from flask_cors import CORS, cross_origin
-from .. import config
+from .. import config, utils
 from ..service import PhotoService
 import json
 
@@ -47,10 +47,18 @@ def render_photo():
     if 'uid' in body and body['uid']:
         uid = body['uid']
 
+    # count faces on image
+    faces = utils.count_number_of_faces(image_url)
+    if faces == 0:
+        return jsonify(error=config.NO_FACE), 200
+    elif faces > 1:
+        return jsonify(error=config.MORE_ONE_FACES), 200
+
     # set client host
     PhotoService.host = request.headers.get('Origin')
+
     # if no uid means it's new photo
-    # let's remove background from image
+    # let's remove background from this image
     if uid is None:
         # remove background from photo
         remove_bg_result = PhotoService.remove_photo_bg(image_url=body['url'])
@@ -69,10 +77,6 @@ def render_photo():
         print("Can't detect exact face, trying again with morphology transformation")
         faces = photo_service.detect_face(use_morphology=True)
 
-    if len(faces) == 0:
-        return jsonify(error="no_face"), 200
-    elif len(faces) > 1:
-        return jsonify(error="more_one_faces"), 200
     # detect face landmark
     photo_service.detect_landmarks(faces[0])
 

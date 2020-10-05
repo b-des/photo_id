@@ -1,15 +1,26 @@
 import os
 import shutil
 
+import imutils
 import numpy as np
 import cv2
 import requests
 from PIL import Image
-
+import cv2
 from app import config
 
 LEFT_EYE_INDICES = [36, 37, 38, 39, 40, 41]
 RIGHT_EYE_INDICES = [42, 43, 44, 45, 46, 47]
+
+
+def count_number_of_faces(url):
+    face_cascade = cv2.CascadeClassifier(config.FACE_CASCADE_FILE_PATH)
+    img = imutils.url_to_image(url)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+    count_faces = str(len(faces))
+    print("number of face(s)= " + count_faces)
+    return len(faces)
 
 
 def rect_to_tuple(rect):
@@ -63,7 +74,7 @@ def crop_image(image, det):
 
 
 def save_tmp_file(uid, image: Image, file_name='blank.jpg'):
-    tmp_dir = '{}/{}'.format(config.TMP_IMAGE_PATH, uid)
+    tmp_dir = config.TMP_IMAGE_PATH.format(uid)
     if not os.path.exists(tmp_dir):
         os.makedirs(tmp_dir)
     photo_name = '{}/{}'.format(tmp_dir, file_name)
@@ -73,7 +84,7 @@ def save_tmp_file(uid, image: Image, file_name='blank.jpg'):
 
 def remove_tmp_dir(uid=None):
     if uid is not None:
-        tmp_dir_path = '{}/{}'.format(config.TMP_IMAGE_PATH, uid)
+        tmp_dir_path = config.TMP_IMAGE_PATH.format(uid)
         try:
             shutil.rmtree(os.path.dirname(tmp_dir_path))
         except Exception:
@@ -81,13 +92,13 @@ def remove_tmp_dir(uid=None):
 
 
 def send_file_over_http(host, file_path, uid, photo_name="blank.jpg", remove_tmp_path=True):
-    no_bg_photo = open(file_path, 'rb')
+    file = open(file_path, 'rb')
     data = {
         'uid': uid,
         'photo_name': photo_name
     }
     files = {
-        'file': no_bg_photo,
+        'file': file,
     }
     if host.find('localhost') != -1:
         host = 'http://localhost/{}'.format(config.HANDLER_URL)
