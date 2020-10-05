@@ -62,16 +62,25 @@ def crop_image(image, det):
     return image[top:bottom, left:right]
 
 
-def save_tmp_file(uid, image: Image, file_name='blank'):
+def save_tmp_file(uid, image: Image, file_name='blank.jpg'):
     tmp_dir = '{}/{}'.format(config.TMP_IMAGE_PATH, uid)
     if not os.path.exists(tmp_dir):
-        os.mkdir(tmp_dir)
+        os.makedirs(tmp_dir)
     photo_name = '{}/{}'.format(tmp_dir, file_name)
     image.save(photo_name, quality=100, dpi=(600, 600))
     return photo_name
 
 
-def send_file_over_http(host, file_path, uid, photo_name="blank.jpg"):
+def remove_tmp_dir(uid=None):
+    if uid is not None:
+        tmp_dir_path = '{}/{}'.format(config.TMP_IMAGE_PATH, uid)
+        try:
+            shutil.rmtree(os.path.dirname(tmp_dir_path))
+        except Exception:
+            pass
+
+
+def send_file_over_http(host, file_path, uid, photo_name="blank.jpg", remove_tmp_path=True):
     no_bg_photo = open(file_path, 'rb')
     data = {
         'uid': uid,
@@ -80,12 +89,17 @@ def send_file_over_http(host, file_path, uid, photo_name="blank.jpg"):
     files = {
         'file': no_bg_photo,
     }
-    host = '{}/{}'.format(host, config.HANDLER_URL)
+    if host.find('localhost') != -1:
+        host = 'http://localhost/{}'.format(config.HANDLER_URL)
+    else:
+        host = '{}/{}'.format(host, config.HANDLER_URL)
+
     try:
         result = requests.post(host, files=files, data=data)
         result.raise_for_status()
     except Exception:
         return {}
     finally:
-        shutil.rmtree(os.path.dirname(file_path))
+        if remove_tmp_path is True:
+            shutil.rmtree(os.path.dirname(file_path))
     return result.json()

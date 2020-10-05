@@ -54,6 +54,7 @@ def render_photo():
     if uid is None:
         # remove background from photo
         remove_bg_result = PhotoService.remove_photo_bg(image_url=body['url'])
+        print(remove_bg_result)
         image_url = remove_bg_result['url']
     # create instance of service
     # this service responsible for image manipulation
@@ -77,11 +78,12 @@ def render_photo():
 
     # adjust original photo according to document standard
     d = body['dimensions']
-    photo_service.generate_photo_with_size(d['width'], d['height'], int(d['crown']), int(d['chin']))
+    photo_service.generate_photo_with_size(int(d['width']), int(d['height']), int(d['crown']), int(d['chin']))
 
     # if no preview size - save generated photo as final result
     if preview_size is None and uid:
-        response = photo_service.save_generated_photo(uid=uid, hue=hue, corner=corner, scale=scale)
+        ext = body['ext'] if 'ext' in body else config.DEFAULT_PHOTO_EXT
+        response = photo_service.save_generated_photo(uid=uid, hue=hue, corner=corner, scale=scale, ext=ext)
     else:
         # add preview image as base64 string to response dictionary
         remove_bg_result['base64'] = photo_service.get_result(size=preview_size).decode('ascii')
@@ -103,10 +105,13 @@ def save_base64_image():
 
     hue = body['hue'] if 'hue' in body and body['hue'] else 'color'
     corner = body['corner'] if 'corner' in body and body['corner'] else 0
-    # save base64 image to local storage
+
     host = request.headers.get('Origin')
     uid = body['uid']
-    result = PhotoService.save_base64_to_image(body['b64'], host, uid, hue, corner)
+    ext = body['ext'] if 'ext' in body else config.DEFAULT_PHOTO_EXT
+    size = body['size'] if 'size' in body else None
+    # save base64 image to local storage
+    result = PhotoService.save_base64_to_image(body['b64'], host, uid, hue, corner, ext=ext, size=size)
     return jsonify(error="", result=result), 200
 
 

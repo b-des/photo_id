@@ -13,7 +13,7 @@ import requests
 
 from app import config
 from ..utils import extract_left_eye_center, extract_right_eye_center, get_rotation_matrix, save_tmp_file, \
-    send_file_over_http
+    send_file_over_http, remove_tmp_dir
 import numpy as np
 from PIL import Image as PillowImage, ImageDraw, ImageFont, ImageOps, ImageEnhance
 from sklearn.cluster import KMeans
@@ -254,6 +254,17 @@ class PhotoService:
             plt.show()
 
     def get_result(self, size=None):
+        '''
+        Return base64 encoded image
+        Parameters
+        ----------
+        size
+
+        Returns
+        -------
+        str - base64 string
+
+        '''
         if size is not None and size[0] > 0:
             self.image.thumbnail(size, PillowImage.ANTIALIAS)
         buffered = BytesIO()
@@ -261,23 +272,31 @@ class PhotoService:
         img_str = base64.b64encode(buffered.getvalue())
         return img_str
 
-    def save_generated_photo(self, uid, hue='', corner=0, scale=1):
-        file_name = 'result.jpg'
+    def save_generated_photo(self, uid, hue='', corner=0, scale=1, ext=config.DEFAULT_PHOTO_EXT):
+        file_name = '{}.{}'.format(config.RESULT_PHOTO_NAME, ext)
+        # convert to grayscale if needed
         if hue == 'gray':
             self.image = ImageOps.grayscale(self.image)
+        # draw triangular corner
         self.image = self.__draw_corner_triangle__(image=self.image, corner_position=corner, scale=scale)
         tmp_file = save_tmp_file(uid=uid, image=self.image, file_name=file_name)
-        return send_file_over_http(host=self.host, file_path=tmp_file, uid=uid, photo_name=file_name)
+        result = send_file_over_http(host=self.host, file_path=tmp_file, uid=uid, photo_name=file_name)
+        return result
 
     @classmethod
-    def save_base64_to_image(cls, base64_string, host, uid, hue='', corner=0):
+    def save_base64_to_image(cls, base64_string, host, uid, hue='', corner=0, ext=config.DEFAULT_PHOTO_EXT, size=None):
         img_data = base64.b64decode(base64_string.replace("data:image/png;base64,", ""))
         image = PillowImage.open(io.BytesIO(img_data))
         image = image.convert('RGB')
+        # resize image if size is present in request
+        if size is not None and size[0] is not None and size[1] is not None:
+            image = image.resize(size, PillowImage.ANTIALIAS)
+        # convert to grayscale if needed
         if hue == 'gray':
             image = ImageOps.grayscale(image)
+        # draw triangular corner
         image = cls.__draw_corner_triangle__(image=image, corner_position=corner)
-        file_name = 'result.jpg'
+        file_name = '{}.{}'.format(config.RESULT_PHOTO_NAME, ext)
         tmp_file = save_tmp_file(uid=uid, image=image, file_name=file_name)
         return send_file_over_http(host=host, file_path=tmp_file, uid=uid, photo_name=file_name)
 
@@ -287,19 +306,26 @@ class PhotoService:
 
         tmp_dir = '{}/{}'.format(config.TMP_IMAGE_PATH, uid)
 
-        if not os.path.exists(tmp_dir):
-            os.mkdir(tmp_dir)
-        photo_name = '{}/no-bg.jpg'.format(tmp_dir)
-        if config.REMOVE_BG_API_KEY is not None and config.REMOVE_BG_API_KEY != "":
-            remove_bg = RemoveBg(config.REMOVE_BG_API_KEY, "")
-            remove_bg.remove_background_from_img_url(image_url, new_file_name=photo_name, bg_color='white')
-        else:
-            img = imutils.url_to_image(image_url)
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-            img = PillowImage.fromarray(img)
-            img.save(photo_name, quality=100)
+        no_bg_photo_name = '{}.{}'.format(config.NO_BG_PHOTO_NAME, config.DEFAULT_PHOTO_EXT)
+        original_photo_name = '{}.{}'.format(config.ORIGINAL_PHOTO_NAME, config.DEFAULT_PHOTO_EXT)
 
-        result = send_file_over_http(host=cls.host, file_path=photo_name, uid=uid, photo_name='no-bg.jpg')
+        no_bg_photo_path = '{}/{}'.format(tmp_dir, no_bg_photo_name)
+        original_photo_path = '{}/{}'.format(tmp_dir, original_photo_name)
+
+        #if config.REMOVE_BG_API_KEY is not None and config.REMOVE_BG_API_KEY != "":
+        #    remove_bg = RemoveBg(config.REMOVE_BG_API_KEY, "")
+        #    remove_bg.remove_background_from_img_url(image_url, new_file_name=no_bg_photo_path, bg_color='white')
+        #else:
+
+        img = imutils.url_to_image(image_url)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img = PillowImage.fromarray(img)
+
+        save_tmp_file(uid, img, original_photo_name)
+        send_file_over_http(host=cls.host, file_path=original_photo_path, uid=uid, photo_name=original_photo_name)
+
+        save_tmp_file(uid, img, no_bg_photo_name)
+        result = send_file_over_http(host=cls.host, file_path=no_bg_photo_path, uid=uid, photo_name=no_bg_photo_name)
         return result
 
     @classmethod

@@ -6,9 +6,8 @@ TMP_IMAGE_PATH = '/tmp/photo-id'
 HANDLER_URL = os.environ['HANDLER_URL'] if 'HANDLER_URL' in os.environ else 'handler.php'
 REMOVE_BG_API_KEY = os.environ['REMOVE_BG_API_KEY'] if 'REMOVE_BG_API_KEY' in os.environ else None
 
+ORIGINAL_PHOTO_NAME = 'original'
+NO_BG_PHOTO_NAME = 'original-without-bg'
+RESULT_PHOTO_NAME = 'final-result'
+DEFAULT_PHOTO_EXT = 'jpg'
 
-MULTIPLIER = 10
-FINAL_PHOTO_WIDTH = int(30 * MULTIPLIER)
-FINAL_PHOTO_HEIGHT = int(40 * MULTIPLIER)
-TOP_HEAD_LINE = int(2.5 * MULTIPLIER)
-BOTTOM_HEAD_LINE = TOP_HEAD_LINE + int(31 * MULTIPLIER)

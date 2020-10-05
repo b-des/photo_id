@@ -6,3 +6,4 @@ env
 /samples/**
 !/samples/test.jpg
 error.log
+./tmp
