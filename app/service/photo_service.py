@@ -74,7 +74,7 @@ class PhotoService:
         gray_copy = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
         gauss = cv2.GaussianBlur(gray_copy, (3, 3), 0)
         # get binary image from grayscale image
-        _, binary = cv2.threshold(gauss, 225, 255, cv2.THRESH_BINARY_INV)
+        _, binary = cv2.threshold(gauss, 235, 255, cv2.THRESH_BINARY_INV)
 
         if use_morphology is True:
             # Morph close and invert image
