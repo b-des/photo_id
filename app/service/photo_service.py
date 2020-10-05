@@ -320,9 +320,12 @@ class PhotoService:
         send_file_over_http(host=cls.host, file_path=original_photo_path, uid=uid, photo_name=original_photo_name)
 
         # remove background if key is present
-        if config.REMOVE_BG_API_KEY is not None and config.REMOVE_BG_API_KEY != "":
+        if config.REMOVE_BG_API_KEY is not None and config.IS_PROD:
             remove_bg = RemoveBg(config.REMOVE_BG_API_KEY, "")
-            remove_bg.remove_background_from_img_url(image_url, new_file_name=no_bg_photo_path, bg_color='white')
+            try:
+                remove_bg.remove_background_from_img_url(image_url, new_file_name=no_bg_photo_path, bg_color='white')
+            except Exception:
+                save_tmp_file(uid, img, no_bg_photo_name)
         else:
             save_tmp_file(uid, img, no_bg_photo_name)
 
