@@ -23,7 +23,7 @@ def create_app(config=None, app_name=__name__):
     blueprints = BLUEPRINTS
     register_blueprints(app, blueprints)
     register_error_pages(app)
-    #setup_logger()
+    setup_logger()
 
     return app
 
@@ -37,7 +37,7 @@ def register_blueprints(app, blueprints):
 
 def setup_logger():
     logging.basicConfig(
-        filename=LOGGING_FILE,
+        #filename=LOGGING_FILE,
         level=logging.INFO,
         format='%(levelname)s:%(asctime)s - %(message)s'
     )
