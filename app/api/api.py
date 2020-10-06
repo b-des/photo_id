@@ -21,6 +21,12 @@ def after_request(response):
 @api.route('/render-photo', methods=['POST'])
 @cross_origin()
 def render_photo():
+    """
+    Generate ID photo wrom source image by given parameters
+    Returns
+    -------
+    JSON object
+    """
     body = request.json
     # check if fields exist in request
     if 'url' not in body or body['url'] is None:
@@ -99,6 +105,12 @@ def render_photo():
 @api.route('/save-photo-b64', methods=['POST'])
 @cross_origin()
 def save_base64_image():
+    """
+    Save image represented in base64
+    Returns
+    -------
+    JSON object
+    """
     body = request.json
     # check if fields exist in request
     if 'b64' not in body or body['b64'] is None:
@@ -127,7 +139,13 @@ def remove_background():
 
     if not body or 'url' not in body or body['url'] is None:
         return jsonify(error="Missing required parameter 'url'"), 400
-    PhotoService.remove_photo_bg(body['url'])
+
+    if not body or 'uid' not in body or body['uid'] is None:
+        return jsonify(error="Missing required parameter 'uid'"), 400
+
+    url = body['url']
+    uid = body['uid']
+    PhotoService.remove_photo_bg(image_url=url, is_full_size=True, t_uid=uid)
     return jsonify(error="", result='success'), 200
 
 

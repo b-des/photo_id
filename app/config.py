@@ -9,6 +9,7 @@ IS_PROD = True if 'environment' in os.environ and os.environ['environment'] == '
 
 ORIGINAL_PHOTO_NAME = 'original'
 NO_BG_PHOTO_NAME = 'original-without-bg'
+NO_BG_BIG_SIZE_PHOTO_NAME = 'original-without-bg-full-size'
 RESULT_PHOTO_NAME = 'final-result'
 DEFAULT_PHOTO_EXT = 'jpg'
 

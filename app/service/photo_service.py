@@ -301,12 +301,15 @@ class PhotoService:
         return send_file_over_http(host=host, file_path=tmp_file, uid=uid, photo_name=file_name)
 
     @classmethod
-    def remove_photo_bg(cls, image_url):
-        uid = uuid.uuid4()
+    def remove_photo_bg(cls, image_url, is_full_size=False, t_uid=None):
+        uid = uuid.uuid4() if t_uid is None else t_uid
 
         tmp_dir = config.TMP_IMAGE_PATH.format(uid)
 
         no_bg_photo_name = '{}.{}'.format(config.NO_BG_PHOTO_NAME, config.DEFAULT_PHOTO_EXT)
+        if is_full_size:
+            no_bg_photo_name = '{}.{}'.format(config.NO_BG_BIG_SIZE_PHOTO_NAME, config.DEFAULT_PHOTO_EXT)
+
         original_photo_name = '{}.{}'.format(config.ORIGINAL_PHOTO_NAME, config.DEFAULT_PHOTO_EXT)
 
         no_bg_photo_path = '{}/{}'.format(tmp_dir, no_bg_photo_name)
@@ -317,7 +320,10 @@ class PhotoService:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         img = PillowImage.fromarray(img)
         save_tmp_file(uid, img, original_photo_name)
-        send_file_over_http(host=cls.host, file_path=original_photo_path, uid=uid, photo_name=original_photo_name)
+        # if use not regular size
+        # don't save original image in target directory
+        if not is_full_size:
+            send_file_over_http(host=cls.host, file_path=original_photo_path, uid=uid, photo_name=original_photo_name)
 
         # remove background if key is present
         if config.REMOVE_BG_API_KEY is not None and config.IS_PROD:
@@ -325,8 +331,10 @@ class PhotoService:
             try:
                 remove_bg.remove_background_from_img_url(image_url, new_file_name=no_bg_photo_path, bg_color='white')
             except Exception:
+                # save original instead
                 save_tmp_file(uid, img, no_bg_photo_name)
         else:
+            # if no key - save original image instead
             save_tmp_file(uid, img, no_bg_photo_name)
 
         # save image without background in target directory
