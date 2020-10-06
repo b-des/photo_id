@@ -336,7 +336,8 @@ class PhotoService:
                 # save original instead
                 save_tmp_file(uid, img, no_bg_photo_name)
         else:
-            logging.info("Can't to remove bg according to missed API KEY, uid: %s, image url: %s", uid, image_url)
+            logging.info("Can't to remove bg according to missed API KEY or none prod mode, uid: %s, image url: %s",
+                         uid, image_url)
             # if no key - save original image instead
             save_tmp_file(uid, img, no_bg_photo_name)
 

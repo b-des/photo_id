@@ -1,7 +1,6 @@
 import os
-from http import HTTPStatus
 import logging
-from .config import ROOT_DIR, LOGGING_FILE
+from .config import ROOT_DIR, LOGGING_FILE, IS_PROD
 from .api import api
 from .frontend import frontend
 from .static import static
@@ -37,7 +36,7 @@ def register_blueprints(app, blueprints):
 
 def setup_logger():
     logging.basicConfig(
-        #filename=LOGGING_FILE,
+        filename=LOGGING_FILE if IS_PROD else None,
         level=logging.INFO,
         format='%(levelname)s:%(asctime)s - %(message)s'
     )
