@@ -1,1 +1,0 @@
-INFO:2020-10-06 10:32:40,679 - Save base64 image, uid: 51b072a9-9afa-4802-ae8c-aa9804d22192, ext: jpg, size: None

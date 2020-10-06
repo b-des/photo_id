@@ -130,6 +130,8 @@ def save_base64_image():
     logging.info("Save base64 image, uid: %s, ext: %s, size: %s", uid, ext, size)
     # save base64 image to local storage
     result = PhotoService.save_base64_to_image(b64, host, uid, hue, corner, ext=ext, size=size)
+    if result is None:
+        return jsonify(error="Can't save base64 image", result=None), 400
     return jsonify(error="", result=result), 200
 
 

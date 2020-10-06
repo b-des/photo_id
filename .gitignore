@@ -6,4 +6,5 @@ env
 /samples/**
 !/samples/test.jpg
 error.log
+logs.txt
 ./tmp

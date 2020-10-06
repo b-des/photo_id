@@ -4,7 +4,7 @@ from .config import ROOT_DIR, LOGGING_FILE, IS_PROD
 from .api import api
 from .frontend import frontend
 from .static import static
-from flask import Flask, render_template, abort, jsonify
+from flask import Flask, jsonify
 
 BLUEPRINTS = [api, frontend, static]
 

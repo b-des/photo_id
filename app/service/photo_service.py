@@ -285,7 +285,12 @@ class PhotoService:
 
     @classmethod
     def save_base64_to_image(cls, base64_string, host, uid, hue='', corner=0, ext=config.DEFAULT_PHOTO_EXT, size=None):
-        img_data = base64.b64decode(base64_string.replace("data:image/png;base64,", ""))
+
+        try:
+            img_data = base64.b64decode(base64_string.replace("data:image/png;base64,", ""))
+        except Exception as e:
+            logging.exception("Can't read base64 image")
+            return None
         image = PillowImage.open(io.BytesIO(img_data))
         image = image.convert('RGB')
         # resize image if size is present in request
