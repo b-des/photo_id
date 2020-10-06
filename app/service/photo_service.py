@@ -331,7 +331,11 @@ class PhotoService:
             remove_bg = RemoveBg(config.REMOVE_BG_API_KEY, "")
             logging.error("Going to remove background, uid: %s, image url: %s", uid, image_url)
             try:
-                remove_bg.remove_background_from_img_url(image_url, new_file_name=no_bg_photo_path, bg_color='white')
+                size = 'regular'
+                if is_full_size:
+                    size = 'full'
+                remove_bg.remove_background_from_img_url(image_url, new_file_name=no_bg_photo_path,
+                                                         bg_color='white', size=size)
             except Exception as e:
                 logging.error("Failed to remove background, uid: %s, image url: %s, reason: %s", uid, image_url, str(e))
                 # save original instead
