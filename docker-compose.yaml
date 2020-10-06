@@ -2,6 +2,7 @@ version: '3.7'
 services:
   backend:
     environment:
+      - environment=${environment}
       - REMOVE_BG_API_KEY=${REMOVE_BG_API_KEY}
       - HANDLER_URL=${HANDLER_URL}
     build: .
