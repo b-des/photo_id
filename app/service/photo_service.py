@@ -323,12 +323,13 @@ class PhotoService:
         # if use not regular size
         # don't save original image in target directory
         if not is_full_size:
-            send_file_over_http(host=cls.host, file_path=original_photo_path, uid=uid, photo_name=original_photo_name)
+            send_file_over_http(host=cls.host, file_path=original_photo_path, uid=uid,
+                                photo_name=original_photo_name, remove_tmp_path=False)
 
         # remove background if key is present
         if config.REMOVE_BG_API_KEY is not None and config.IS_PROD is True:
             remove_bg = RemoveBg(config.REMOVE_BG_API_KEY, "")
-            logging.error("GOING remove background, uid: %s, image url: %s, env: %s", uid, image_url, os.environ['environment'])
+            logging.error("Going to remove background, uid: %s, image url: %s", uid, image_url)
             try:
                 remove_bg.remove_background_from_img_url(image_url, new_file_name=no_bg_photo_path, bg_color='white')
             except Exception as e:
