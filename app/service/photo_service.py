@@ -330,10 +330,12 @@ class PhotoService:
             remove_bg = RemoveBg(config.REMOVE_BG_API_KEY, "")
             try:
                 remove_bg.remove_background_from_img_url(image_url, new_file_name=no_bg_photo_path, bg_color='white')
-            except Exception:
+            except Exception as e:
+                logging.error("Failed to remove background, uid: %s, image url: %s, reason: %s", uid, image_url, str(e))
                 # save original instead
                 save_tmp_file(uid, img, no_bg_photo_name)
         else:
+            logging.info("Can't to remove bg according to missed API KEY, uid: %s, image url: %s", uid, image_url)
             # if no key - save original image instead
             save_tmp_file(uid, img, no_bg_photo_name)
 

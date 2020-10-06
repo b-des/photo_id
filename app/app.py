@@ -1,7 +1,7 @@
 import os
 from http import HTTPStatus
-
-from .config import ROOT_DIR
+import logging
+from .config import ROOT_DIR, LOGGING_FILE
 from .api import api
 from .frontend import frontend
 from .static import static
@@ -14,7 +14,8 @@ def create_app(config=None, app_name=__name__):
     app = Flask(
         app_name,
         static_folder=os.path.join(ROOT_DIR, "static"),
-        template_folder="templates"
+        template_folder="templates",
+
     )
 
     app.config.from_object("app.config")
@@ -22,6 +23,7 @@ def create_app(config=None, app_name=__name__):
     blueprints = BLUEPRINTS
     register_blueprints(app, blueprints)
     register_error_pages(app)
+    setup_logger()
 
     return app
 
@@ -31,6 +33,15 @@ def register_blueprints(app, blueprints):
 
     for blueprint in blueprints:
         app.register_blueprint(blueprint)
+
+
+def setup_logger():
+    logging.basicConfig(
+        filename=LOGGING_FILE,
+        level=logging.INFO,
+        format='%(levelname)s:%(asctime)s - %(message)s'
+    )
+    logging.getLogger('werkzeug').setLevel(logging.ERROR)
 
 
 def register_error_pages(app):

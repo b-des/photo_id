@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, jsonify
 from flask_cors import CORS, cross_origin
 from .. import config, utils
 from ..service import PhotoService
-import json
+import logging
 
 api = Blueprint('api', __name__, url_prefix='/api/', template_folder="")
 
@@ -67,8 +67,8 @@ def render_photo():
     # let's remove background from this image
     if uid is None:
         # remove background from photo
+        logging.info("Going to remove photo background for preview, url: %s", image_url)
         remove_bg_result = PhotoService.remove_photo_bg(image_url=body['url'])
-        print(remove_bg_result)
         image_url = remove_bg_result['url']
     # create instance of service
     # this service responsible for image manipulation
@@ -93,6 +93,7 @@ def render_photo():
     # if no preview size - save generated photo as final result
     if preview_size is None and uid:
         ext = body['ext'] if 'ext' in body else config.DEFAULT_PHOTO_EXT
+        logging.info("Save generated image, uid: %s, request: %s", uid, body)
         response = photo_service.save_generated_photo(uid=uid, hue=hue, corner=corner, scale=scale, ext=ext)
     else:
         # add preview image as base64 string to response dictionary
@@ -124,10 +125,12 @@ def save_base64_image():
 
     host = request.headers.get('Origin')
     uid = body['uid']
+    b64 = body['b64']
     ext = body['ext'] if 'ext' in body else config.DEFAULT_PHOTO_EXT
     size = body['size'] if 'size' in body else None
+    logging.info("Save base64 image, uid: %s, ext: %s, size: %s", uid, ext, size)
     # save base64 image to local storage
-    result = PhotoService.save_base64_to_image(body['b64'], host, uid, hue, corner, ext=ext, size=size)
+    result = PhotoService.save_base64_to_image(b64, host, uid, hue, corner, ext=ext, size=size)
     return jsonify(error="", result=result), 200
 
 
@@ -135,7 +138,6 @@ def save_base64_image():
 @cross_origin()
 def remove_background():
     body = request.json
-    print(body)
 
     if not body or 'url' not in body or body['url'] is None:
         return jsonify(error="Missing required parameter 'url'"), 400
@@ -145,6 +147,7 @@ def remove_background():
 
     url = body['url']
     uid = body['uid']
+    logging.info("Remove background and save full size result. UID: %s, image url: %s", uid, url)
     PhotoService.remove_photo_bg(image_url=url, is_full_size=True, t_uid=uid)
     return jsonify(error="", result='success'), 200
 

@@ -1,3 +1,4 @@
+import logging
 import os
 import shutil
 
@@ -108,7 +109,8 @@ def send_file_over_http(host, file_path, uid, photo_name="blank.jpg", remove_tmp
     try:
         result = requests.post(host, files=files, data=data)
         result.raise_for_status()
-    except Exception:
+    except Exception as e:
+        logging.error("Failed to send file: %s to host: %s, uid: %s, reason: %s", file_path, host, uid, str(e))
         return {}
     finally:
         if remove_tmp_path is True:
