@@ -272,7 +272,7 @@ class PhotoService:
         img_str = base64.b64encode(buffered.getvalue())
         return img_str
 
-    def save_generated_photo(self, uid, hue='', corner=0, scale=1, ext=config.DEFAULT_PHOTO_EXT):
+    def save_generated_photo(self, uid, hue='', corner='none', scale=1, ext=config.DEFAULT_PHOTO_EXT):
         file_name = '{}.{}'.format(config.RESULT_PHOTO_NAME, ext)
         # convert to grayscale if needed
         if hue == 'gray':
@@ -284,7 +284,7 @@ class PhotoService:
         return result
 
     @classmethod
-    def save_base64_to_image(cls, base64_string, host, uid, hue='', corner=0, ext=config.DEFAULT_PHOTO_EXT, size=None):
+    def save_base64_to_image(cls, base64_string, host, uid, hue='', corner='none', ext=config.DEFAULT_PHOTO_EXT, size=None):
 
         try:
             img_data = base64.b64decode(base64_string.replace("data:image/png;base64,", ""))
@@ -416,7 +416,7 @@ class PhotoService:
                     'position': (0, image.size[1] - corner_size)
                 }
             }
-            corner_param = rotation_angles[int(corner_position)]
+            corner_param = rotation_angles[corner_position]
             triangle = PillowImage.open('static/triangle.png')
             triangle = triangle.convert('RGBA')
             triangle = triangle.rotate(corner_param['angle'])
