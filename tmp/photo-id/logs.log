@@ -1,0 +1,28 @@
+root - INFO:2020-10-07 16:37:46,565 - Can't to remove bg according to missed API KEY or none prod mode, uid: df84655a-63e1-4a25-a331-8ff51027c794, image url: http://localhost:8080/src/assets/Robert-Downey-Jr-c.jpg
+root - INFO:2020-10-07 17:29:17,504 - Can't to remove bg according to missed API KEY or none prod mode, uid: a3cecce1-c61b-4daa-8c97-7367586526b8, image url: http://localhost:8080/src/assets/Robert-Downey-Jr-c.jpg
+root - INFO:2020-10-07 17:33:02,544 - Can't to remove bg according to missed API KEY or none prod mode, uid: d407f352-24ed-4e06-803d-1bb330f7d9c7, image url: http://localhost:8080/src/assets/Robert-Downey-Jr-c.jpg
+root - INFO:2020-10-07 17:34:38,285 - Can't to remove bg according to missed API KEY or none prod mode, uid: 2f903403-5b1d-4138-9051-ef426f936068, image url: http://localhost:8080/src/assets/Robert-Downey-Jr-c.jpg
+root - INFO:2020-10-07 17:34:55,439 - Save generated image, uid: 2f903403-5b1d-4138-9051-ef426f936068, request: {'url': 'http://localhost/images/2f903403-5b1d-4138-9051-ef426f936068/original-without-bg.jpg', 'debug': False, 'uid': '2f903403-5b1d-4138-9051-ef426f936068', 'hue': 'color', 'corner': 'BR', 'scale': 2, 'dimensions': {'width': 240, 'height': 320, 'crown': 20, 'chin': 260}}
+app.app - ERROR:2020-10-07 17:34:55,439 - Exception on /api/render-photo [POST]
+Traceback (most recent call last):
+  File "/home/andrii/Python/photo_id/env/lib/python3.8/site-packages/flask/app.py", line 2447, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/andrii/Python/photo_id/env/lib/python3.8/site-packages/flask/app.py", line 1952, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/andrii/Python/photo_id/env/lib/python3.8/site-packages/flask/app.py", line 1821, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/home/andrii/Python/photo_id/env/lib/python3.8/site-packages/flask/_compat.py", line 39, in reraise
+    raise value
+  File "/home/andrii/Python/photo_id/env/lib/python3.8/site-packages/flask/app.py", line 1950, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/andrii/Python/photo_id/env/lib/python3.8/site-packages/flask/app.py", line 1936, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "/home/andrii/Python/photo_id/env/lib/python3.8/site-packages/flask_cors/decorator.py", line 128, in wrapped_function
+    resp = make_response(f(*args, **kwargs))
+  File "/home/andrii/Python/photo_id/app/api/api.py", line 96, in render_photo
+    response = photo_service.save_generated_photo(uid=uid, hue=hue, corner=corner, scale=scale, ext=ext)
+  File "/home/andrii/Python/photo_id/app/service/photo_service.py", line 281, in save_generated_photo
+    self.image = self.__draw_corner_triangle__(image=self.image, corner_position=corner, scale=scale)
+  File "/home/andrii/Python/photo_id/app/service/photo_service.py", line 398, in __draw_corner_triangle__
+    if int(corner_position) > 0:
+ValueError: invalid literal for int() with base 10: 'BR'

@@ -395,22 +395,23 @@ class PhotoService:
 
     @staticmethod
     def __draw_corner_triangle__(image, corner_position, scale=1):
-        if int(corner_position) > 0:
+        if corner_position != "none":
             corner_size = int(50 * scale)
             rotation_angles = {
-                1: {
+                "TL": {
                     'angle': 180,
                     'position': (0, 0),
                 },
-                2: {
+
+                "TR": {
                     'angle': 90,
                     'position': (image.size[0] - corner_size, 0)
                 },
-                3: {
+                "BR": {
                     'angle': 0,
                     'position': (image.size[0] - corner_size, image.size[1] - corner_size)
                 },
-                4: {
+                "BL": {
                     'angle': -90,
                     'position': (0, image.size[1] - corner_size)
                 }
