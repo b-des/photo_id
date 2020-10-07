@@ -1,10 +1,13 @@
 import os
 import logging
+import time
+
 from .config import ROOT_DIR, LOGGING_FILE, IS_PROD
 from .api import api
 from .frontend import frontend
 from .static import static
 from flask import Flask, jsonify
+from logging.handlers import RotatingFileHandler
 
 BLUEPRINTS = [api, frontend, static]
 
@@ -38,9 +41,14 @@ def setup_logger():
     logging.basicConfig(
         filename=LOGGING_FILE if IS_PROD else None,
         level=logging.INFO,
-        format='%(levelname)s:%(asctime)s - %(message)s'
+        format='%(name)s - %(levelname)s:%(asctime)s - %(message)s'
     )
+    handler = RotatingFileHandler(LOGGING_FILE, maxBytes=20, backupCount=5)
     logging.getLogger('werkzeug').setLevel(logging.ERROR)
+   # logging.getLogger(logging.root.name).addHandler(handler)
+   # for i in range(10):
+   #     logging.info("This is test log line %s" % i)
+   #     time.sleep(.5)
 
 
 def register_error_pages(app):

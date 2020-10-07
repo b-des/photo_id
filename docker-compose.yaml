@@ -6,7 +6,7 @@ services:
       - REMOVE_BG_API_KEY=${REMOVE_BG_API_KEY}
       - HANDLER_URL=${HANDLER_URL}
     build: .
-    command: gunicorn --bind 0.0.0.0:6000 run:app
+    command: gunicorn --bind 0.0.0.0:6000 run:app --workers 8 --threads 8 -k gthread --timeout 10
     restart: always
     volumes:
       - /tmp/photo-id/:/tmp/photo-id/
