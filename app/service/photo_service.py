@@ -20,6 +20,7 @@ from sklearn.cluster import KMeans
 from removebg import RemoveBg
 import matplotlib.pyplot as plt
 import uuid
+logger = logging.getLogger(config.LOGGER_NAME)
 
 
 class PhotoService:
@@ -30,7 +31,6 @@ class PhotoService:
     host = ''
 
     def __init__(self, image_url, dimensions, debug=False):
-        print("Gonna to do hard task")
         self.debug = debug
         self.document_dimensions = dimensions
         self.face_cascade = cv2.CascadeClassifier(config.FACE_CASCADE_FILE_PATH)
@@ -289,7 +289,7 @@ class PhotoService:
         try:
             img_data = base64.b64decode(base64_string.replace("data:image/png;base64,", ""))
         except Exception as e:
-            logging.exception("Can't read base64 image")
+            logger.exception("Can't read base64 image")
             return None
         image = PillowImage.open(io.BytesIO(img_data))
         image = image.convert('RGB')
@@ -334,7 +334,7 @@ class PhotoService:
         # remove background if key is present
         if config.REMOVE_BG_API_KEY is not None and config.IS_PROD is True:
             remove_bg = RemoveBg(config.REMOVE_BG_API_KEY, "")
-            logging.error("Going to remove background, uid: %s, image url: %s", uid, image_url)
+            logger.error("Going to remove background, uid: %s, image url: %s", uid, image_url)
             try:
                 size = 'regular'
                 if is_full_size:
@@ -342,11 +342,11 @@ class PhotoService:
                 remove_bg.remove_background_from_img_url(image_url, new_file_name=no_bg_photo_path,
                                                          bg_color='white', size=size)
             except Exception as e:
-                logging.error("Failed to remove background, uid: %s, image url: %s, reason: %s", uid, image_url, str(e))
+                logger.error("Failed to remove background, uid: %s, image url: %s, reason: %s", uid, image_url, str(e))
                 # save original instead
                 save_tmp_file(uid, img, no_bg_photo_name)
         else:
-            logging.info("Can't to remove bg according to missed API KEY or none prod mode, uid: %s, image url: %s",
+            logger.info("Can't to remove bg according to missed API KEY or none prod mode, uid: %s, image url: %s",
                          uid, image_url)
             # if no key - save original image instead
             save_tmp_file(uid, img, no_bg_photo_name)

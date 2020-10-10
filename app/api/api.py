@@ -5,6 +5,7 @@ from ..service import PhotoService
 import logging
 
 api = Blueprint('api', __name__, url_prefix='/api/', template_folder="")
+logger = logging.getLogger(config.LOGGER_NAME)
 
 
 @api.route('/', )
@@ -79,7 +80,7 @@ def render_photo():
     # if can't find face or found more than one face
     # try again using morphology transformation(e.g. smoothes small objects)
     if len(faces) == 0 or len(faces) > 1:
-        print("Can't detect exact face, trying again with morphology transformation")
+        logger.info("Can't detect exact face, trying again with morphology transformation of UID: {}".format(uid or "empty"))
         faces = photo_service.detect_face(use_morphology=True)
 
     # detect face landmark
@@ -92,7 +93,7 @@ def render_photo():
     # if no preview size - save generated photo as final result
     if preview_size is None and uid:
         ext = body['ext'] if 'ext' in body else config.DEFAULT_PHOTO_EXT
-        logging.info("Save generated image, uid: %s, request: %s", uid, body)
+        logger.info("Save generated image, uid: %s, request: %s", uid, body)
         response = photo_service.save_generated_photo(uid=uid, hue=hue, corner=corner, scale=scale, ext=ext)
     else:
         # add preview image as base64 string to response dictionary
@@ -127,7 +128,7 @@ def save_base64_image():
     b64 = body['b64']
     ext = body['ext'] if 'ext' in body else config.DEFAULT_PHOTO_EXT
     size = body['size'] if 'size' in body else None
-    logging.info("Save base64 image, uid: %s, ext: %s, size: %s", uid, ext, size)
+    logger.info("Save base64 image, uid: %s, ext: %s, size: %s", uid, ext, size)
     # save base64 image to local storage
     result = PhotoService.save_base64_to_image(b64, host, uid, hue, corner, ext=ext, size=size)
     if result is None:
@@ -148,7 +149,7 @@ def remove_background():
 
     url = body['url']
     uid = body['uid']
-    logging.info("Remove background and save full size result. UID: %s, image url: %s", uid, url)
+    logger.info("Remove background and save full size result. UID: %s, image url: %s", uid, url)
     PhotoService.remove_photo_bg(image_url=url, is_full_size=True, t_uid=uid)
     return jsonify(error="", result='success'), 200
 

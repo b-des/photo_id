@@ -12,6 +12,7 @@ from app import config
 
 LEFT_EYE_INDICES = [36, 37, 38, 39, 40, 41]
 RIGHT_EYE_INDICES = [42, 43, 44, 45, 46, 47]
+logger = logging.getLogger(config.LOGGER_NAME)
 
 
 def count_number_of_faces(url):
@@ -110,7 +111,7 @@ def send_file_over_http(host, file_path, uid, photo_name="blank.jpg", remove_tmp
         result = requests.post(host, files=files, data=data)
         result.raise_for_status()
     except Exception as e:
-        logging.error("Failed to send file: %s to host: %s, uid: %s, reason: %s", file_path, host, uid, str(e))
+        logger.error("Failed to send file: %s to host: %s, uid: %s, reason: %s", file_path, host, uid, str(e))
         return {}
     finally:
         if remove_tmp_path is True:

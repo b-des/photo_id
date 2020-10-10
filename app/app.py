@@ -2,14 +2,16 @@ import os
 import logging
 import time
 
-from .config import ROOT_DIR, LOGGING_FILE, IS_PROD
+from .config import ROOT_DIR, LOGGING_FILE, IS_PROD, LOGGER_NAME
 from .api import api
 from .frontend import frontend
 from .static import static
 from flask import Flask, jsonify
-from logging.handlers import RotatingFileHandler
+from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
 
 BLUEPRINTS = [api, frontend, static]
+
+logger = logging.getLogger(LOGGER_NAME)
 
 
 def create_app(config=None, app_name=__name__):
@@ -38,17 +40,22 @@ def register_blueprints(app, blueprints):
 
 
 def setup_logger():
-    logging.basicConfig(
-        filename=LOGGING_FILE if IS_PROD else None,
-        level=logging.INFO,
-        format='%(name)s - %(levelname)s:%(asctime)s - %(message)s'
-    )
-    handler = RotatingFileHandler(LOGGING_FILE, maxBytes=20, backupCount=5)
-    logging.getLogger('werkzeug').setLevel(logging.ERROR)
-   # logging.getLogger(logging.root.name).addHandler(handler)
-   # for i in range(10):
-   #     logging.info("This is test log line %s" % i)
-   #     time.sleep(.5)
+    #logging.basicConfig(
+    #    #filename=LOGGING_FILE if IS_PROD else None,
+    #    level=logging.INFO,
+    #    format='%(name)s - %(levelname)s:%(asctime)s - %(message)s'
+    #)
+
+    #logging.getLogger('werkzeug').setLevel(logging.ERROR)
+    logger.setLevel(logging.INFO)
+
+    # add a rotating handler
+    handler = TimedRotatingFileHandler(LOGGING_FILE,
+                                       when="midnight",
+                                       backupCount=5)
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
 
 
 def register_error_pages(app):
