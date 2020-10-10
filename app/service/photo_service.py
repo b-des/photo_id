@@ -418,7 +418,6 @@ class PhotoService:
                 }
             }
             corner_param = rotation_angles[corner_position]
-            logger.info("Corner params: %s", corner_param)
             triangle = PillowImage.open('static/triangle.png')
             triangle = triangle.convert('RGBA')
             triangle = triangle.rotate(corner_param['angle'])
