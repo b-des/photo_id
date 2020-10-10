@@ -422,7 +422,7 @@ class PhotoService:
             triangle = PillowImage.open('static/triangle.png')
             triangle = triangle.convert('RGBA')
             triangle = triangle.rotate(corner_param['angle'])
-            triangle.resize((corner_size, corner_size), PillowImage.ANTIALIAS)
+            triangle.thumbnail((corner_size, corner_size), PillowImage.ANTIALIAS)
             image.paste(triangle, corner_param['position'], triangle)
         return image
 
