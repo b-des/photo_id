@@ -1,5 +1,6 @@
 import os
 import logging
+import sys
 import time
 
 from .config import ROOT_DIR, LOGGING_FILE, IS_PROD, LOGGER_NAME
@@ -56,6 +57,7 @@ def setup_logger():
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
     handler.setFormatter(formatter)
     logger.addHandler(handler)
+    logger.addHandler(logging.StreamHandler(sys.stdout))
 
 
 def register_error_pages(app):

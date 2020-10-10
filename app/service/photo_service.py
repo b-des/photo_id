@@ -396,6 +396,7 @@ class PhotoService:
     @staticmethod
     def __draw_corner_triangle__(image, corner_position, scale=1):
         if corner_position != "none":
+            logger.debug("Draw triangle. Image width: {}".format(image.size[0]))
             corner_size = int(image.size[0] / 2)
             rotation_angles = {
                 "TL": {
