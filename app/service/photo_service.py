@@ -272,13 +272,13 @@ class PhotoService:
         img_str = base64.b64encode(buffered.getvalue())
         return img_str
 
-    def save_generated_photo(self, uid, hue='', corner='none', scale=1, ext=config.DEFAULT_PHOTO_EXT):
+    def save_generated_photo(self, uid, hue='', corner='none', ext=config.DEFAULT_PHOTO_EXT):
         file_name = '{}.{}'.format(config.RESULT_PHOTO_NAME, ext)
         # convert to grayscale if needed
         if hue == 'gray':
             self.image = ImageOps.grayscale(self.image)
         # draw triangular corner
-        self.image = self.__draw_corner_triangle__(image=self.image, corner_position=corner, scale=scale)
+        self.image = self.__draw_corner_triangle__(image=self.image, corner_position=corner)
         tmp_file = save_tmp_file(uid=uid, image=self.image, file_name=file_name)
         result = send_file_over_http(host=self.host, file_path=tmp_file, uid=uid, photo_name=file_name)
         return result
@@ -394,7 +394,7 @@ class PhotoService:
         return result.json()
 
     @staticmethod
-    def __draw_corner_triangle__(image, corner_position, scale=1):
+    def __draw_corner_triangle__(image, corner_position):
         if corner_position != "none":
             corner_size = int(image.size[0] / 2)
             logger.info("Draw triangle. Image width: %s, corner size: %s", image.size[0], corner_size)

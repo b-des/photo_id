@@ -40,10 +40,6 @@ def render_photo():
     if 'previewSize' in body and body['previewSize'] is not None:
         preview_size = (int(body['previewSize']), int(body['previewSize']))
 
-    scale = 1
-    if 'scale' in body and body['scale'] is not None:
-        scale = body['scale']
-
     debug = body['debug']
     image_url = body['url']
     remove_bg_result = {}
@@ -94,7 +90,7 @@ def render_photo():
     if preview_size is None and uid:
         ext = body['ext'] if 'ext' in body else config.DEFAULT_PHOTO_EXT
         logger.info("Save generated image, uid: %s, request: %s", uid, body)
-        response = photo_service.save_generated_photo(uid=uid, hue=hue, corner=corner, scale=scale, ext=ext)
+        response = photo_service.save_generated_photo(uid=uid, hue=hue, corner=corner, ext=ext)
     else:
         # add preview image as base64 string to response dictionary
         remove_bg_result['base64'] = photo_service.get_result(size=preview_size).decode('ascii')
