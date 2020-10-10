@@ -396,8 +396,8 @@ class PhotoService:
     @staticmethod
     def __draw_corner_triangle__(image, corner_position, scale=1):
         if corner_position != "none":
-            logger.info("Draw triangle. Image width: %s", image.size[0])
             corner_size = int(image.size[0] / 2)
+            logger.info("Draw triangle. Image width: %s, corner size: %s", image.size[0], corner_size)
             rotation_angles = {
                 "TL": {
                     'angle': 180,
@@ -418,6 +418,7 @@ class PhotoService:
                 }
             }
             corner_param = rotation_angles[corner_position]
+            logger.info("Corner params: %s", corner_param)
             triangle = PillowImage.open('static/triangle.png')
             triangle = triangle.convert('RGBA')
             triangle = triangle.rotate(corner_param['angle'])
