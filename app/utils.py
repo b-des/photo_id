@@ -16,12 +16,14 @@ logger = logging.getLogger(config.LOGGER_NAME)
 
 
 def count_number_of_faces(url):
+    logger.info("Counting faces....")
     face_cascade = cv2.CascadeClassifier(config.FACE_CASCADE_FILE_PATH)
     img = imutils.url_to_image(url)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     faces = face_cascade.detectMultiScale(gray, 1.3, 5)
     count_faces = str(len(faces))
     print("number of face(s)= " + count_faces)
+    logger.info("Number of faces: %s", count_faces)
     return len(faces)
 
 
