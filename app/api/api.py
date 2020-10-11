@@ -3,6 +3,7 @@ from flask_cors import CORS, cross_origin
 from .. import config, utils
 from ..service import PhotoService
 import logging
+from urllib.parse import urlsplit
 
 api = Blueprint('api', __name__, url_prefix='/api/', template_folder="")
 logger = logging.getLogger(config.LOGGER_NAME)
@@ -76,7 +77,8 @@ def render_photo():
     # if can't find face or found more than one face
     # try again using morphology transformation(e.g. smoothes small objects)
     if len(faces) == 0 or len(faces) > 1:
-        logger.info("Can't detect exact face, trying again with morphology transformation of UID: {}".format(uid or "empty"))
+        logger.info(
+            "Can't detect exact face, trying again with morphology transformation of UID: {}".format(uid or "empty"))
         faces = photo_service.detect_face(use_morphology=True)
 
     # detect face landmark
@@ -146,6 +148,7 @@ def remove_background():
     url = body['url']
     uid = body['uid']
     logger.info("Remove background and save full size result. UID: %s, image url: %s", uid, url)
+    PhotoService.host = "{0.scheme}://{0.netloc}".format(urlsplit(url))
     PhotoService.remove_photo_bg(image_url=url, is_full_size=True, t_uid=uid)
     return jsonify(error="", result='success'), 200
 
