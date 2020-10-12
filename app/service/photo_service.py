@@ -349,22 +349,11 @@ class PhotoService:
         img = PillowImage.fromarray(img)
         save_tmp_file(uid, img, original_photo_name)
 
-        watermark_result = None
         # if use not regular size
         # don't save original image in target directory
         if not is_full_size:
             send_file_over_http(host=cls.host, file_path=original_photo_path, uid=uid,
                                 photo_name=original_photo_name, remove_tmp_path=False)
-
-            # create image with watermark
-            image_with_watermark = PillowImage.open(no_bg_photo_path)
-            image_with_watermark = cls.add_watermark(image_with_watermark)
-            # save ia with watermark
-            watermark_photo_name = '{}.{}'.format(config.NO_BG_WATERMARK_PHOTO_NAME, config.DEFAULT_PHOTO_EXT)
-            watermark_photo_path = '{}/{}'.format(tmp_dir, watermark_photo_name)
-            save_tmp_file(uid, image_with_watermark, watermark_photo_name)
-            watermark_result = send_file_over_http(host=cls.host, file_path=watermark_photo_path, uid=uid,
-                                                   remove_tmp_path=False)
 
         # remove background if key is present and received parameter to remove BG
         if config.REMOVE_BG_API_KEY is not None and config.IS_PROD is True and remove_bg is True:
@@ -388,8 +377,19 @@ class PhotoService:
 
         # save image without background in target directory
         result = send_file_over_http(host=cls.host, file_path=no_bg_photo_path, uid=uid, photo_name=no_bg_photo_name)
-        if watermark_result:
+
+        if not is_full_size:
+            # create image with watermark
+            image_with_watermark = PillowImage.open(no_bg_photo_path)
+            image_with_watermark = cls.add_watermark(image_with_watermark)
+            # save ia with watermark
+            watermark_photo_name = '{}.{}'.format(config.NO_BG_WATERMARK_PHOTO_NAME, config.DEFAULT_PHOTO_EXT)
+            watermark_photo_path = '{}/{}'.format(tmp_dir, watermark_photo_name)
+            save_tmp_file(uid, image_with_watermark, watermark_photo_name)
+            watermark_result = send_file_over_http(host=cls.host, file_path=watermark_photo_path, uid=uid,
+                                                   remove_tmp_path=False)
             result['watermark_url'] = watermark_result['url']
+
         return result
 
     @staticmethod
