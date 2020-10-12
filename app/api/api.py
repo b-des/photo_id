@@ -42,7 +42,7 @@ def render_photo():
         preview_size = (int(body['previewSize']), int(body['previewSize']))
 
     remove_bg = False
-    if 'remove_bg' in body and body['remove_bg'] is not None:
+    if 'removeBackground' in body and body['removeBackground'] is not False:
         remove_bg = True
 
     debug = body['debug']
