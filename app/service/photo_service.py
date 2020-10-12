@@ -287,6 +287,9 @@ class PhotoService:
     @classmethod
     def add_watermark(cls, image, text='demo'):
 
+        if cls.host:
+            text = cls.host.replace('https://', '').replace('http://', '')
+
         width, height = image.size
 
         watermark = PillowImage.new('RGBA', (width, height), (0, 0, 0, 255))
