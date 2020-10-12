@@ -290,7 +290,7 @@ class PhotoService:
         width, height = image.size
 
         watermark = PillowImage.new('RGBA', (width, height), (0, 0, 0, 255))
-        font = ImageFont.truetype("fonts/Harabara-Mais-Demo.otf", 24)
+        font = ImageFont.truetype("fonts/Harabara-Mais-Demo.otf", int((height / 200) * 24))
         mask = PillowImage.new('L', (width, height), color=60)
         draw = ImageDraw.Draw(mask)
 
