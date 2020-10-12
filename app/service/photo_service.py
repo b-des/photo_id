@@ -332,6 +332,9 @@ class PhotoService:
                                 photo_name=original_photo_name, remove_tmp_path=False)
 
         # remove background if key is present and received parameter to remove BG
+        logger.info(config.REMOVE_BG_API_KEY)
+        logger.info(config.IS_PROD)
+        logger.info(remove_bg)
         if config.REMOVE_BG_API_KEY is not None and config.IS_PROD is True and remove_bg is True:
             remove_bg = RemoveBg(config.REMOVE_BG_API_KEY, "")
             logger.error("Going to remove background, uid: %s, image url: %s", uid, image_url)
