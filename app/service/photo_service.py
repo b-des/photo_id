@@ -306,7 +306,7 @@ class PhotoService:
         return send_file_over_http(host=host, file_path=tmp_file, uid=uid, photo_name=file_name)
 
     @classmethod
-    def remove_photo_bg(cls, image_url, is_full_size=False, t_uid=None):
+    def remove_photo_bg(cls, image_url, is_full_size=False, t_uid=None, remove_bg=False):
         uid = uuid.uuid4() if t_uid is None else t_uid
 
         tmp_dir = config.TMP_IMAGE_PATH.format(uid)
@@ -331,8 +331,8 @@ class PhotoService:
             send_file_over_http(host=cls.host, file_path=original_photo_path, uid=uid,
                                 photo_name=original_photo_name, remove_tmp_path=False)
 
-        # remove background if key is present
-        if config.REMOVE_BG_API_KEY is not None and config.IS_PROD is True:
+        # remove background if key is present and received parameter to remove BG
+        if config.REMOVE_BG_API_KEY is not None and config.IS_PROD is True and remove_bg:
             remove_bg = RemoveBg(config.REMOVE_BG_API_KEY, "")
             logger.error("Going to remove background, uid: %s, image url: %s", uid, image_url)
             try:

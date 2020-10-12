@@ -41,6 +41,10 @@ def render_photo():
     if 'previewSize' in body and body['previewSize'] is not None:
         preview_size = (int(body['previewSize']), int(body['previewSize']))
 
+    remove_bg = False
+    if 'remove_bg' in body and body['remove_bg'] is not None:
+        remove_bg = True
+
     debug = body['debug']
     image_url = body['url']
     remove_bg_result = {}
@@ -65,7 +69,7 @@ def render_photo():
     # let's remove background from this image
     if uid is None:
         # remove background from photo
-        remove_bg_result = PhotoService.remove_photo_bg(image_url=body['url'])
+        remove_bg_result = PhotoService.remove_photo_bg(image_url=body['url'], remove_bg=remove_bg)
         image_url = remove_bg_result['url']
     # create instance of service
     # this service responsible for image manipulation
@@ -149,7 +153,7 @@ def remove_background():
     uid = body['uid']
     logger.info("Remove background and save full size result. UID: %s, image url: %s", uid, url)
     PhotoService.host = "{0.scheme}://{0.netloc}".format(urlsplit(url))
-    PhotoService.remove_photo_bg(image_url=url, is_full_size=True, t_uid=uid)
+    PhotoService.remove_photo_bg(image_url=url, is_full_size=True, t_uid=uid, remove_bg=True)
     return jsonify(error="", result='success'), 200
 
 
