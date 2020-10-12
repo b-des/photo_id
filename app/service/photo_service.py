@@ -73,6 +73,7 @@ class PhotoService:
         # convert the image to grayscale
         gray_copy = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
         gauss = cv2.GaussianBlur(gray_copy, (3, 3), 0)
+        gauss = cv2.medianBlur(gauss, 5)
         # get binary image from grayscale image
         _, binary = cv2.threshold(gauss, 235, 255, cv2.THRESH_BINARY_INV)
 
@@ -82,17 +83,21 @@ class PhotoService:
             binary = 225 - cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel, iterations=2)
 
         # get contours of the objects
-        contours, hierarchy = cv2.findContours(binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        contours, hierarchy = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         if len(contours) < 1:
             return []
-        contours = contours[0]
+        contours = contours
 
         # draw debug contour
         image = self.image
         if self.debug is True:
             image = cv2.drawContours(self.image, contours, -1, (0, 255, 0), 2)
 
-        x, y, w, h = cv2.boundingRect(contours)
+        # Find the index of the largest contour
+        areas = [cv2.contourArea(c) for c in contours]
+        max_index = np.argmax(areas)
+        cnt = contours[max_index]
+        x, y, w, h = cv2.boundingRect(cnt)
 
         # get gray copy
         gray_copy = gray_copy[y:y + h, x:x + w]
@@ -293,7 +298,7 @@ class PhotoService:
         width, height = image.size
 
         watermark = PillowImage.new('RGBA', (width, height), (0, 0, 0, 255))
-        font = ImageFont.truetype("fonts/Harabara-Mais-Demo.otf", int((height / 200) * 24))
+        font = ImageFont.truetype("fonts/Harabara-Mais-Demo.otf", int((height / 200) * config.WATERMARK_TEXT_SIZE))
         mask = PillowImage.new('L', (width, height), color=60)
         draw = ImageDraw.Draw(mask)
 
