@@ -94,11 +94,12 @@ def remove_tmp_dir(uid=None):
             pass
 
 
-def send_file_over_http(host, file_path, uid, photo_name="blank.jpg", remove_tmp_path=True):
+def send_file_over_http(host, file_path, uid, photo_name=None, remove_tmp_path=True):
     file = open(file_path, 'rb')
+    head, tail = os.path.split(file_path)
     data = {
         'uid': uid,
-        'photo_name': photo_name
+        'photo_name': photo_name or tail
     }
     files = {
         'file': file,

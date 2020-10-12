@@ -266,6 +266,7 @@ class PhotoService:
 
         '''
         if size is not None and size[0] > 0:
+            self.image = self.add_watermark(image=self.image)
             self.image.thumbnail(size, PillowImage.ANTIALIAS)
         buffered = BytesIO()
         self.image.save(buffered, format="JPEG", quality=100)
@@ -282,6 +283,28 @@ class PhotoService:
         tmp_file = save_tmp_file(uid=uid, image=self.image, file_name=file_name)
         result = send_file_over_http(host=self.host, file_path=tmp_file, uid=uid, photo_name=file_name)
         return result
+
+    @classmethod
+    def add_watermark(cls, image, text='demo'):
+
+        width, height = image.size
+
+        watermark = PillowImage.new('RGBA', (width, height), (0, 0, 0, 255))
+        font = ImageFont.truetype("fonts/Harabara-Mais-Demo.otf", 24)
+        mask = PillowImage.new('L', (width, height), color=60)
+        draw = ImageDraw.Draw(mask)
+
+        text = textwrap.fill(text)
+        text_size = draw.textsize(text, font)
+
+        for x in range(width)[10::text_size[0] + 50]:
+            for y in range(height)[::text_size[1] * 2]:
+                draw.text((x, y), text, font=font)
+
+        watermark.putalpha(mask)
+
+        image.paste(watermark, (0, 0), watermark)
+        return image
 
     @classmethod
     def save_base64_to_image(cls, base64_string, host, uid, hue='', corner='none', ext=config.DEFAULT_PHOTO_EXT, size=None):
@@ -325,11 +348,23 @@ class PhotoService:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         img = PillowImage.fromarray(img)
         save_tmp_file(uid, img, original_photo_name)
+
+        watermark_result = None
         # if use not regular size
         # don't save original image in target directory
         if not is_full_size:
             send_file_over_http(host=cls.host, file_path=original_photo_path, uid=uid,
                                 photo_name=original_photo_name, remove_tmp_path=False)
+
+            # create image with watermark
+            image_with_watermark = PillowImage.open(no_bg_photo_path)
+            image_with_watermark = cls.add_watermark(image_with_watermark)
+            # save ia with watermark
+            watermark_photo_name = '{}.{}'.format(config.NO_BG_WATERMARK_PHOTO_NAME, config.DEFAULT_PHOTO_EXT)
+            watermark_photo_path = '{}/{}'.format(tmp_dir, watermark_photo_name)
+            save_tmp_file(uid, image_with_watermark, watermark_photo_name)
+            watermark_result = send_file_over_http(host=cls.host, file_path=watermark_photo_path, uid=uid,
+                                                   remove_tmp_path=False)
 
         # remove background if key is present and received parameter to remove BG
         if config.REMOVE_BG_API_KEY is not None and config.IS_PROD is True and remove_bg is True:
@@ -346,52 +381,16 @@ class PhotoService:
                 # save original instead
                 save_tmp_file(uid, img, no_bg_photo_name)
         else:
-            logger.info("Don't remove bg according to missed API KEY or none prod mode, uid: %s, image url: %s",
+            logger.info("Don't remove BG due to absence API KEY or none prod mode, uid: %s, image url: %s",
                          uid, image_url)
             # if no key - save original image instead
             save_tmp_file(uid, img, no_bg_photo_name)
 
         # save image without background in target directory
         result = send_file_over_http(host=cls.host, file_path=no_bg_photo_path, uid=uid, photo_name=no_bg_photo_name)
+        if watermark_result:
+            result['watermark_url'] = watermark_result['url']
         return result
-
-    @classmethod
-    def add_watermark(cls, uid, text='Demo'):
-        start_time = time.time()
-        tmp_dir = config.TMP_IMAGE_PATH.format(uid)
-        photo_name = '{}/no-bg.jpg'.format(tmp_dir)
-        new_photo_name = '{}/new-no-bg.jpg'.format(tmp_dir)
-        img = PillowImage.open(photo_name)
-        width, height = img.size
-
-        watermark = PillowImage.new('RGBA', (width, height), (0, 0, 0, 255))
-        font = ImageFont.truetype("fonts/Harabara-Mais-Demo.otf", 24)
-        mask = PillowImage.new('L', (width, height), color=40)
-        draw = ImageDraw.Draw(mask)
-
-        text = textwrap.fill(text)
-        text_size = draw.textsize(text, font)
-
-        for x in range(width)[10::text_size[0] + 50]:
-            for y in range(height)[::text_size[1] * 2]:
-                draw.text((x, y), text, font=font)
-
-        watermark.putalpha(mask)
-
-        img.paste(watermark, (0, 0), watermark)
-        img.save(new_photo_name, quality=100, dpi=(600, 600))
-        data = {
-            'uid': uid
-        }
-
-        watermark_photo = open(new_photo_name, 'rb')
-        files = {
-            'watermark': watermark_photo,
-            'original': watermark_photo
-        }
-        result = requests.post('http://localhost/handler.php', files=files, data=data)
-        print("--- %s seconds ---" % (time.time() - start_time))
-        return result.json()
 
     @staticmethod
     def __draw_corner_triangle__(image, corner_position):
