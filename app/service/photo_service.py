@@ -299,13 +299,13 @@ class PhotoService:
 
         watermark = PillowImage.new('RGBA', (width, height), (0, 0, 0, 255))
         font = ImageFont.truetype("fonts/Harabara-Mais-Demo.otf", int((height / 200) * config.WATERMARK_TEXT_SIZE))
-        mask = PillowImage.new('L', (width, height), color=60)
+        mask = PillowImage.new('L', (width, height), color=50)
         draw = ImageDraw.Draw(mask)
 
         text = textwrap.fill(text)
         text_size = draw.textsize(text, font)
 
-        for x in range(width)[10::text_size[0] + 50]:
+        for x in range(width)[10::text_size[0] + 20]:
             for y in range(height)[::text_size[1] * 2]:
                 draw.text((x, y), text, font=font)
 
