@@ -57,9 +57,9 @@ def render_photo():
 
     # count faces on image
     faces = utils.count_number_of_faces(image_url)
-    if faces == 0:
+    if len(faces) == 0:
         return jsonify(error=config.NO_FACE), 200
-    elif faces > 1:
+    elif len(faces) > 1:
         return jsonify(error=config.MORE_ONE_FACES), 200
 
     # set client host

@@ -21,14 +21,13 @@ def count_number_of_faces(url):
     face_cascade = cv2.CascadeClassifier(config.FACE_CASCADE_FILE_PATH)
     img = imutils.url_to_image(url)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    faces = 0
+    faces = []
     for i in numpy.arange(1.1, 1.9, 0.1):
         logger.info("Try with scale factor: %s", i)
         faces = face_cascade.detectMultiScale(gray, i, 5)
-        faces = len(faces)
-        logger.info("Number of faces: %s", faces)
-        if faces == 1:
-            return 1
+        logger.info("Number of faces: %s", len(faces))
+        if len(faces) == 1:
+            return faces
     logger.info("No face detected")
     return faces
 

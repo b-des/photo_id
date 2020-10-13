@@ -9,6 +9,7 @@ import logging
 import cv2
 import dlib
 import imutils
+import numpy
 import requests
 
 from app import config
@@ -122,23 +123,30 @@ class PhotoService:
         gauss = cv2.GaussianBlur(gray_copy, (3, 3), 0)
 
         # detect faces in the image
-        faces = self.face_cascade.detectMultiScale(
-            gauss,
-            scaleFactor=1.3,
-            minNeighbors=5,
-            minSize=(100, 100),
-            flags=cv2.CASCADE_SCALE_IMAGE
-        )
+        faces = []
+        for i in numpy.arange(1.1, 1.9, 0.1):
+            logger.info("Try with scale factor: %s", i)
+            faces = self.face_cascade.detectMultiScale(
+                gray_copy,
+                scaleFactor=i,
+                minNeighbors=10,
+                minSize=(100, 100),
+                flags=cv2.CASCADE_SCALE_IMAGE
+            )
+            logger.info("Number of faces: %s", len(faces))
+            if len(faces) == 1:
+                self.image = image[y:y + h, 0:self.image.shape[1]]
+                return faces
 
         print("found {0} faces!".format(len(faces)))
 
         if len(faces) == 1:
+            pass
             # crop image by contours(cut object from the image)
             #self.image = image[y:y + h, x:x + w]
-            self.image = image[y:y + h, 0:self.image.shape[1]]
-        else:
-            return []
-        return faces
+            #self.image = image[y:y + h, 0:self.image.shape[1]]
+
+        return []
 
     def detect_landmarks(self, face):
         x, y, w, h = face
