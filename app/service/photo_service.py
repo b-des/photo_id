@@ -135,15 +135,14 @@ class PhotoService:
             )
             logger.info("Number of faces: %s", len(faces))
             if len(faces) == 1:
-                self.image = image[y:y + h, 0:self.image.shape[1]]
+                self.image = image[y:y + h, x:x + w]
                 return faces
 
         print("found {0} faces!".format(len(faces)))
 
         if len(faces) == 1:
-            pass
             # crop image by contours(cut object from the image)
-            #self.image = image[y:y + h, x:x + w]
+            self.image = image[y:y + h, x:x + w]
             #self.image = image[y:y + h, 0:self.image.shape[1]]
 
         return []
@@ -250,7 +249,16 @@ class PhotoService:
         k = needed_head_height / self.original_head_height
 
         # offset along the x-axis to place the face at the center of the canvas
-        result = imutils.translate(self.image, int(self.image.shape[1] / 2 - self.center_of_face), 0)
+        translate_x = int(self.image.shape[1] / 2 - self.center_of_face)
+        result = imutils.translate(self.image, translate_x, 0)
+
+        # fill black area after translation
+        if translate_x < 0:
+            pt1, pt2 = (result.shape[1] + translate_x, 0), (result.shape[1], result.shape[0])
+        else:
+            pt1, pt2 = (0, 0), (translate_x, result.shape[0])
+
+        cv2.rectangle(result, pt1, pt2, (255, 255, 255), -1)
 
         # resize image by the highest side
         result = imutils.resize(result, height=int(result.shape[0] * k))
