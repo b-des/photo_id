@@ -86,7 +86,6 @@ class PhotoService:
         contours, hierarchy = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         if len(contours) < 1:
             return []
-        contours = contours
 
         # draw debug contour
         image = self.image
@@ -94,16 +93,29 @@ class PhotoService:
             image = cv2.drawContours(self.image, contours, -1, (0, 255, 0), 2)
 
         # Find the index of the largest contour
-        areas = [cv2.contourArea(c) for c in contours]
-        max_index = np.argmax(areas)
-        cnt = contours[max_index]
-        x, y, w, h = cv2.boundingRect(cnt)
+        #areas = [cv2.contourArea(c) for c in contours]
+        #max_index = np.argmax(areas)
+        #cnt = contours[max_index]
+        #x, y, w, h = cv2.boundingRect(cnt)
 
+        boxes = []
+        for c in contours:
+            (x, y, w, h) = cv2.boundingRect(c)
+            boxes.append([x, y, x + w, y + h])
+
+        boxes = np.asarray(boxes)
+        x = np.min(boxes[:, 0])
+        y = np.min(boxes[:, 1])
+        w = np.max(boxes[:, 2])
+        h = np.max(boxes[:, 3])
+
+        cv2.rectangle(self.image, (x, y), (x + w, y + h), (0, 255, 0), 2)
         # get gray copy
         gray_copy = gray_copy[y:y + h, x:x + w]
 
         if 'develop' in os.environ['environment']:
-            plt.imshow(image)
+            plt.title("Bounding contours")
+            plt.imshow(self.image)
             plt.colorbar()
             plt.show()
 
@@ -297,19 +309,19 @@ class PhotoService:
 
         width, height = image.size
 
-        watermark = PillowImage.new('RGBA', (width, height), (0, 0, 0, 255))
+        watermark = PillowImage.new('RGBA', (width, height), (0, 0, 0, 0))
         font = ImageFont.truetype("fonts/Harabara-Mais-Demo.otf", int((height / 200) * config.WATERMARK_TEXT_SIZE))
         mask = PillowImage.new('L', (width, height), color=50)
-        draw = ImageDraw.Draw(mask)
+        draw = ImageDraw.Draw(watermark)
 
         text = textwrap.fill(text)
         text_size = draw.textsize(text, font)
 
         for x in range(width)[10::text_size[0] + 20]:
             for y in range(height)[::text_size[1] * 2]:
-                draw.text((x, y), text, font=font)
+                draw.text((x, y), text, font=font, fill=(245, 238, 237, 150))
 
-        watermark.putalpha(mask)
+        #watermark.putalpha(mask)
 
         image.paste(watermark, (0, 0), watermark)
         return image
