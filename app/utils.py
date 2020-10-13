@@ -3,6 +3,7 @@ import os
 import shutil
 
 import imutils
+import numpy
 import numpy as np
 import cv2
 import requests
@@ -20,10 +21,16 @@ def count_number_of_faces(url):
     face_cascade = cv2.CascadeClassifier(config.FACE_CASCADE_FILE_PATH)
     img = imutils.url_to_image(url)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(gray, 1.9, 5)
-    count_faces = str(len(faces))
-    logger.info("Number of faces: %s", count_faces)
-    return len(faces)
+    faces = 0
+    for i in numpy.arange(1.1, 1.9, 0.1):
+        logger.info("Try with scale factor: %s", i)
+        faces = face_cascade.detectMultiScale(gray, i, 5)
+        faces = len(faces)
+        logger.info("Number of faces: %s", faces)
+        if faces == 1:
+            return 1
+    logger.info("No face detected")
+    return faces
 
 
 def rect_to_tuple(rect):
