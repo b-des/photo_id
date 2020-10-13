@@ -134,7 +134,8 @@ class PhotoService:
 
         if len(faces) == 1:
             # crop image by contours(cut object from the image)
-            self.image = image[y:y + h, x:x + w]
+            #self.image = image[y:y + h, x:x + w]
+            self.image = image[y:y + h, 0:self.image.shape[1]]
         else:
             return []
         return faces
