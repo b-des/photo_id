@@ -109,7 +109,6 @@ class PhotoService:
         w = np.max(boxes[:, 2])
         h = np.max(boxes[:, 3])
 
-        cv2.rectangle(self.image, (x, y), (x + w, y + h), (0, 255, 0), 2)
         # get gray copy
         gray_copy = gray_copy[y:y + h, x:x + w]
 
@@ -318,7 +317,7 @@ class PhotoService:
         text_size = draw.textsize(text, font)
 
         for x in range(width)[10::text_size[0] + 20]:
-            for y in range(height)[::text_size[1] * 2]:
+            for y in range(height)[::text_size[1] * 4]:
                 draw.text((x, y), text, font=font, fill=(245, 238, 237, 150))
 
         #watermark.putalpha(mask)
