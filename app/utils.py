@@ -34,6 +34,7 @@ def count_number_of_faces(url):
 
 
 def get_exif_metadata(url):
+    logger.info("get_exif_metadata")
     response = requests.get(url)
     img = Image.open(BytesIO(response.content))
     print(img.size)
