@@ -1,13 +1,14 @@
 import logging
 import os
 import shutil
+from io import BytesIO
 
 import imutils
 import numpy
 import numpy as np
 import cv2
 import requests
-from PIL import Image
+from PIL import Image, ExifTags
 import cv2
 from app import config
 
@@ -30,6 +31,20 @@ def count_number_of_faces(url):
             return faces
     logger.info("No face detected")
     return faces
+
+
+def get_exif_metadata(url):
+    response = requests.get(url)
+    img = Image.open(BytesIO(response.content))
+    print(img.size)
+    exifData = {}
+    exifDataRaw = img._getexif()
+    if exifDataRaw:
+        for tag, value in exifDataRaw.items():
+            decodedTag = ExifTags.TAGS.get(tag, tag)
+            exifData[decodedTag] = value
+        logger.info(exifData)
+    return exifData
 
 
 def rect_to_tuple(rect):

@@ -55,6 +55,7 @@ def render_photo():
     if 'uid' in body and body['uid']:
         uid = body['uid']
 
+    utils.get_exif_metadata(image_url)
     # count faces on image
     faces = utils.count_number_of_faces(image_url)
     if len(faces) == 0:
@@ -157,17 +158,9 @@ def remove_background():
     return jsonify(error="", result='success'), 200
 
 
-@api.route('/watermark', methods=['POST'])
+@api.route('/exif', methods=['POST'])
 @cross_origin()
-def watermark():
+def exif():
     body = request.json
-    print(body)
-    print(request.headers.get('Origin'))
+    return utils.get_exif_metadata(body['url'])
 
-    watermark_text = 'Demo'
-    if request.headers.get('Origin'):
-        watermark_text = request.headers.get('Origin').replace('https://', '').replace('http://', '')
-
-    uid = PhotoService.remove_photo_bg(body['url'])
-    result = PhotoService.add_watermark(uid, text=watermark_text)
-    return jsonify(error="", result=result), 200
