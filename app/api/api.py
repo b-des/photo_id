@@ -86,6 +86,9 @@ def render_photo():
             "Can't detect exact face, trying again with morphology transformation of UID: {}".format(uid or "empty"))
         faces = photo_service.detect_face(use_morphology=True)
 
+    if len(faces) == 0:
+        return jsonify(error=config.NO_FACE), 200
+
     # detect face landmark
     photo_service.detect_landmarks(faces[0])
 
