@@ -25,7 +25,7 @@ def count_number_of_faces(url):
     faces = []
     for i in numpy.arange(1.1, 1.9, 0.1):
         logger.info("Try with scale factor: %s", i)
-        faces = face_cascade.detectMultiScale(gray, i, 5)
+        faces = face_cascade.detectMultiScale(gray, i, 10)
         logger.info("Number of faces: %s", len(faces))
         if len(faces) == 1:
             return faces

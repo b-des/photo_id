@@ -55,7 +55,6 @@ def render_photo():
     if 'uid' in body and body['uid']:
         uid = body['uid']
 
-    utils.get_exif_metadata(image_url)
     # count faces on image
     faces = utils.count_number_of_faces(image_url)
     if len(faces) == 0:
