@@ -3,7 +3,7 @@ import logging
 import sys
 import time
 
-from .config import ROOT_DIR, LOGGING_FILE, IS_PROD, LOGGER_NAME
+from .config import ROOT_DIR, LOGGING_FILE, IS_PROD, LOGGER_NAME, TMP_IMAGE_PATH
 from .api import api
 from .frontend import frontend
 from .static import static
@@ -47,6 +47,7 @@ def setup_logger():
     #    format='%(name)s - %(levelname)s:%(asctime)s - %(message)s'
     #)
 
+    create_log_dir_if_not_exist()
     #logging.getLogger('werkzeug').setLevel(logging.ERROR)
     logger.setLevel(logging.INFO)
 
@@ -58,6 +59,11 @@ def setup_logger():
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     logger.addHandler(logging.StreamHandler(sys.stdout))
+
+
+def create_log_dir_if_not_exist():
+    if not os.path.exists(TMP_IMAGE_PATH.format("logs")):
+        os.makedirs(TMP_IMAGE_PATH.format("logs"))
 
 
 def register_error_pages(app):

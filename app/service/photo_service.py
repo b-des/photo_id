@@ -392,6 +392,7 @@ class PhotoService:
                                 photo_name=original_photo_name, remove_tmp_path=False)
 
         # remove background if key is present and received parameter to remove BG
+        is_background_removed = False
         if config.REMOVE_BG_API_KEY is not None and config.IS_PROD is True and remove_bg is True:
             remove_bg = RemoveBg(config.REMOVE_BG_API_KEY, "")
             logger.info("Going to remove background, uid: %s, image url: %s", uid, image_url)
@@ -401,6 +402,7 @@ class PhotoService:
                     size = 'full'
                 remove_bg.remove_background_from_img_url(image_url, new_file_name=no_bg_photo_path,
                                                          bg_color='white', size=size)
+                is_background_removed = True
             except Exception as e:
                 logger.error("Failed to remove background, uid: %s, image url: %s, reason: %s", uid, image_url, str(e))
                 # save original instead
@@ -425,6 +427,7 @@ class PhotoService:
         result = send_file_over_http(host=cls.host, file_path=no_bg_photo_path, uid=uid, photo_name=no_bg_photo_name)
 
         result['watermark_url'] = watermark_result['url']
+        result['is_background_removed'] = is_background_removed
 
         return result
 
