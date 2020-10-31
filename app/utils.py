@@ -98,11 +98,15 @@ def crop_image(image, det):
     return image[top:bottom, left:right]
 
 
-def save_tmp_file(uid, image: Image, file_name='blank.jpg'):
+def get_tmp_file_path(uid, file_name):
     tmp_dir = config.TMP_IMAGE_PATH.format(uid)
     if not os.path.exists(tmp_dir):
         os.makedirs(tmp_dir)
-    photo_name = '{}/{}'.format(tmp_dir, file_name)
+    return '{}/{}'.format(tmp_dir, file_name)
+
+
+def save_tmp_file(uid, image: Image, file_name='blank.jpg'):
+    photo_name = get_tmp_file_path(uid, file_name)
     image.save(photo_name, quality=100, dpi=(600, 600))
     return photo_name
 

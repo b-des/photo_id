@@ -15,6 +15,7 @@ NO_BG_PHOTO_NAME = 'original-without-bg'
 NO_BG_WATERMARK_PHOTO_NAME = 'original-without-bg-watermark'
 NO_BG_BIG_SIZE_PHOTO_NAME = 'original-without-bg-full-size'
 RESULT_PHOTO_NAME = 'final-result'
+RESULT_COLLAGE_NAME = 'collage'
 DEFAULT_PHOTO_EXT = 'jpg'
 
 NO_FACE = 'no_face'
