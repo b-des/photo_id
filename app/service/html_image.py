@@ -1,4 +1,6 @@
 import imgkit
+
+from app import config
 from ..utils import get_tmp_file_path, send_file_over_http
 
 options = {
@@ -18,6 +20,5 @@ def create_collage(url, uid, host):
     path = get_tmp_file_path('1234', 'out.jpg')
     print(path)
     imgkit.from_url(url, path, options=options)
-
-
-create_collage(1, 0, 0)
+    file_name = '{}.{}'.format(config.RESULT_PHOTO_NAME, config.DEFAULT_PHOTO_EXT)
+    send_file_over_http(host=host, file_path=path, uid=uid, photo_name=file_name)

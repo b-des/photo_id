@@ -13,6 +13,7 @@ import numpy
 import requests
 
 from app import config
+from .html_image import create_collage
 from ..utils import extract_left_eye_center, extract_right_eye_center, get_rotation_matrix, save_tmp_file, \
     send_file_over_http, remove_tmp_dir
 import numpy as np
@@ -315,6 +316,7 @@ class PhotoService:
         self.image = self.__draw_corner_triangle__(image=self.image, corner_position=corner)
         tmp_file = save_tmp_file(uid=uid, image=self.image, file_name=file_name)
         result = send_file_over_http(host=self.host, file_path=tmp_file, uid=uid, photo_name=file_name)
+        create_collage(0, uid, self.host)
         return result
 
     @classmethod
