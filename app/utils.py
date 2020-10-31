@@ -136,7 +136,7 @@ def send_file_over_http(host, file_path, uid, photo_name=None, remove_tmp_path=T
         host = '{}/{}'.format(host, config.HANDLER_URL)
 
     try:
-        logger.info("Send file to destination folder. Url: %s, data: %s", host, data)
+        logger.info("Sending file to destination folder. URL: %s, data: %s", host, data)
         result = requests.post(host, files=files, data=data)
         result.raise_for_status()
     except Exception as e:

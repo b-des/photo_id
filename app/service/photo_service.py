@@ -315,8 +315,8 @@ class PhotoService:
         # draw triangular corner
         self.image = self.__draw_corner_triangle__(image=self.image, corner_position=corner)
         tmp_file = save_tmp_file(uid=uid, image=self.image, file_name=file_name)
-        result = send_file_over_http(host=self.host, file_path=tmp_file, uid=uid, photo_name=file_name)
         create_collage(0, uid, self.host)
+        result = send_file_over_http(host=self.host, file_path=tmp_file, uid=uid, photo_name=file_name)
         return result
 
     @classmethod
