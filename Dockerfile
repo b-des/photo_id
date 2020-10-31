@@ -22,7 +22,7 @@ RUN apt-get install -y --fix-missing \
     python3-pip\
     zip \
     && apt-get clean && rm -rf /tmp/* /var/tmp/*
-
+RUN apt-get -qq -y install wkhtmltopdf
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY ./run.py .
