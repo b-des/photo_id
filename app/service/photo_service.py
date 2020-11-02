@@ -315,8 +315,8 @@ class PhotoService:
         # draw triangular corner
         self.image = self.__draw_corner_triangle__(image=self.image, corner_position=corner)
         tmp_file = save_tmp_file(uid=uid, image=self.image, file_name=file_name)
+        result = send_file_over_http(host=self.host, file_path=tmp_file, uid=uid, photo_name=file_name, remove_tmp_path=False)
         create_collage(uid, self.host)
-        result = send_file_over_http(host=self.host, file_path=tmp_file, uid=uid, photo_name=file_name)
         return result
 
     @classmethod
@@ -364,7 +364,9 @@ class PhotoService:
         image = cls.__draw_corner_triangle__(image=image, corner_position=corner)
         file_name = '{}.{}'.format(config.RESULT_PHOTO_NAME, ext)
         tmp_file = save_tmp_file(uid=uid, image=image, file_name=file_name)
-        return send_file_over_http(host=host, file_path=tmp_file, uid=uid, photo_name=file_name)
+        result = send_file_over_http(host=host, file_path=tmp_file, uid=uid, photo_name=file_name, remove_tmp_path=False)
+        create_collage(uid, host)
+        return result
 
     @classmethod
     def remove_photo_bg(cls, image_url, is_full_size=False, t_uid=None, remove_bg=False):
