@@ -17,9 +17,7 @@ options = {
 
 def create_collage(uid, host):
     url = config.COLLAGE_TEMPLATE_URL.format(host, uid)
-    print(url)
     file_name = '{}.{}'.format(config.RESULT_COLLAGE_NAME, config.DEFAULT_PHOTO_EXT)
     path = get_tmp_file_path(uid, file_name)
-    print(path)
     imgkit.from_url(url, path, options=options)
     send_file_over_http(host=host, file_path=path, uid=uid, photo_name=file_name, remove_tmp_path=False)
