@@ -1,6 +1,7 @@
 import logging
 import imgkit
 import base64
+import urllib.parse
 from app import config
 from ..utils import get_tmp_file_path, send_file_over_http
 
@@ -19,7 +20,7 @@ logger = logging.getLogger(config.LOGGER_NAME)
 
 
 def create_collage(uid, host, dimensions):
-    url = config.COLLAGE_TEMPLATE_URL.format(host, uid, base64.b64encode(str(dimensions).encode('utf-8')))
+    url = config.COLLAGE_TEMPLATE_URL.format(host, uid, urllib.parse.urlencode(dimensions))
     logger.info("Generate collage, dimensions: %s, URL: %s", dimensions, url)
     file_name = '{}.{}'.format(config.RESULT_COLLAGE_NAME, config.DEFAULT_PHOTO_EXT)
     path = get_tmp_file_path(uid, file_name)
