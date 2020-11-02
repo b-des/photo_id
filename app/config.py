@@ -8,6 +8,7 @@ HANDLER_URL = os.environ['HANDLER_URL'] if 'HANDLER_URL' in os.environ else 'han
 REMOVE_BG_API_KEY = os.environ['REMOVE_BG_API_KEY'] if 'REMOVE_BG_API_KEY' in os.environ else None
 IS_PROD = True if 'environment' in os.environ and os.environ['environment'] == 'prod' else False
 LOGGER_NAME = "root"
+COLLAGE_TEMPLATE_URL = '{}/photoid-collage?uid={}'
 WATERMARK_TEXT_SIZE = 14
 
 ORIGINAL_PHOTO_NAME = 'original'

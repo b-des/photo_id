@@ -15,8 +15,9 @@ options = {
 }
 
 
-def create_collage(url, uid, host):
-    url = 'https://pechat.photo/index.php?route=photoid/photoid/collag123e'
+def create_collage(uid, host):
+    url = config.COLLAGE_TEMPLATE_URL.format(host, uid)
+    print(url)
     file_name = '{}.{}'.format(config.RESULT_COLLAGE_NAME, config.DEFAULT_PHOTO_EXT)
     path = get_tmp_file_path(uid, file_name)
     print(path)
