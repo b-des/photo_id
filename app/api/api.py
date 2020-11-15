@@ -93,7 +93,8 @@ def render_photo():
 
     # adjust original photo according to document standard
     d = body['dimensions']
-    photo_service.generate_photo_with_size(int(d['width']), int(d['height']), int(d['crown']), int(d['chin']))
+    s = body['scale']
+    photo_service.generate_photo_with_size(int(d['width'] * s), int(d['height'] * s), int(d['crown'] * s), int(d['chin'] * s))
 
     # if no preview size - save generated photo as final result
     if preview_size is None and uid:
