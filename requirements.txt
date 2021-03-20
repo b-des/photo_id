@@ -16,7 +16,7 @@ imgkit==1.0.2
 importlib-metadata==1.5.0
 imutils==0.5.3
 itsdangerous==1.1.0
-Jinja2==2.11.2
+Jinja2==2.11.3
 joblib==0.14.1
 kiwisolver==1.1.0
 kombu==4.6.11
