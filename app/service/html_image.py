@@ -12,8 +12,8 @@ options = {
     'images': '',
     'zoom': 1,
     'format': 'jpg',
-    'height': 760,
-    'width': 510
+    'height': 3040,
+    'width': 2040
 }
 
 logger = logging.getLogger(config.LOGGER_NAME)

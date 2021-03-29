@@ -47,6 +47,7 @@ def render_photo():
 
     debug = body['debug']
     image_url = body['url']
+    is_final_order = True if 'isOrder' in body and body['isOrder'] else False
     remove_bg_result = {}
     hue = body['hue'] if 'hue' in body and body['hue'] else 'color'
     corner = body['corner'] if 'corner' in body and body['corner'] else 0
@@ -67,10 +68,11 @@ def render_photo():
 
     # if no uid means it's new photo
     # let's remove background from this image
-    if uid is None:
+    if uid is None or is_final_order:
         # remove background from photo
-        remove_bg_result = PhotoService.remove_photo_bg(image_url=body['url'], remove_bg=remove_bg)
+        remove_bg_result = PhotoService.remove_photo_bg(image_url=body['url'], remove_bg=remove_bg, is_full_size=is_final_order, t_uid=uid)
         image_url = remove_bg_result['url']
+
     # create instance of service
     # this service responsible for image manipulation
     photo_service = PhotoService(image_url=image_url, dimensions=body['dimensions'], debug=debug or False)
