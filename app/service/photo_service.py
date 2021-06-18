@@ -1,24 +1,27 @@
 import base64
 import io
 import os
+import shutil
 import textwrap
+import time
 from io import BytesIO
 import logging
 import cv2
 import dlib
 import imutils
-import matplotlib.pyplot as plt
 import numpy
-import numpy as np
-from PIL import Image as PillowImage, ImageDraw, ImageFont, ImageOps, ImageEnhance
-from removebg import RemoveBg
-from sklearn.cluster import KMeans
+import requests
 
 from app import config
 from .html_image import create_collage
 from ..utils import extract_left_eye_center, extract_right_eye_center, get_rotation_matrix, save_tmp_file, \
-    send_file_over_http
-
+    send_file_over_http, remove_tmp_dir
+import numpy as np
+from PIL import Image as PillowImage, ImageDraw, ImageFont, ImageOps, ImageEnhance
+from sklearn.cluster import KMeans
+from removebg import RemoveBg
+import matplotlib.pyplot as plt
+import uuid
 logger = logging.getLogger(config.LOGGER_NAME)
 
 
