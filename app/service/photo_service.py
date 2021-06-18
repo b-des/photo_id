@@ -1,27 +1,24 @@
 import base64
 import io
 import os
-import shutil
 import textwrap
-import time
 from io import BytesIO
 import logging
 import cv2
 import dlib
 import imutils
+import matplotlib.pyplot as plt
 import numpy
-import requests
+import numpy as np
+from PIL import Image as PillowImage, ImageDraw, ImageFont, ImageOps, ImageEnhance
+from removebg import RemoveBg
+from sklearn.cluster import KMeans
 
 from app import config
 from .html_image import create_collage
 from ..utils import extract_left_eye_center, extract_right_eye_center, get_rotation_matrix, save_tmp_file, \
-    send_file_over_http, remove_tmp_dir
-import numpy as np
-from PIL import Image as PillowImage, ImageDraw, ImageFont, ImageOps, ImageEnhance
-from sklearn.cluster import KMeans
-from removebg import RemoveBg
-import matplotlib.pyplot as plt
-import uuid
+    send_file_over_http
+
 logger = logging.getLogger(config.LOGGER_NAME)
 
 
@@ -314,6 +311,8 @@ class PhotoService:
             self.image = ImageOps.grayscale(self.image)
         # draw triangular corner
         self.image = self.__draw_corner_triangle__(image=self.image, corner_position=corner)
+        enhancer = ImageEnhance.Brightness(self.image)
+        self.image = enhancer.enhance(1.5)
         tmp_file = save_tmp_file(uid=uid, image=self.image, file_name=file_name)
         result = send_file_over_http(host=self.host, file_path=tmp_file, uid=uid, photo_name=file_name, remove_tmp_path=False)
         create_collage(uid, self.host, self.document_dimensions)
