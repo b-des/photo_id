@@ -101,8 +101,9 @@ def render_photo():
     # if no preview size - save generated photo as final result
     if preview_size is None and uid:
         ext = body['ext'] if 'ext' in body else config.DEFAULT_PHOTO_EXT
+        color_adjustment = body['colorAdjustment'] if 'colorAdjustment' in body else None
         logger.info("Save generated image, uid: %s, request: %s", uid, body)
-        response = photo_service.save_generated_photo(uid=uid, hue=hue, corner=corner, ext=ext)
+        response = photo_service.save_generated_photo(uid=uid, hue=hue, corner=corner, ext=ext, color_adjustment=color_adjustment)
     else:
         # add preview image as base64 string to response dictionary
         remove_bg_result['base64'] = photo_service.get_result(size=preview_size).decode('ascii')

@@ -307,19 +307,32 @@ class PhotoService:
         img_str = base64.b64encode(buffered.getvalue())
         return img_str
 
-    def save_generated_photo(self, uid, hue='', corner='none', ext=config.DEFAULT_PHOTO_EXT):
+    def save_generated_photo(self, uid, hue='', corner='none', ext=config.DEFAULT_PHOTO_EXT, color_adjustment=None):
         file_name = '{}.{}'.format(config.RESULT_PHOTO_NAME, ext)
         # convert to grayscale if needed
         if hue == 'gray':
             self.image = ImageOps.grayscale(self.image)
         # draw triangular corner
         self.image = self.__draw_corner_triangle__(image=self.image, corner_position=corner)
-        enhancer = ImageEnhance.Brightness(self.image)
-        self.image = enhancer.enhance(1.5)
+        self.adjust_colors(self.image, color_adjustment)
         tmp_file = save_tmp_file(uid=uid, image=self.image, file_name=file_name)
         result = send_file_over_http(host=self.host, file_path=tmp_file, uid=uid, photo_name=file_name, remove_tmp_path=False)
         create_collage(uid, self.host, self.document_dimensions)
         return result
+
+    @staticmethod
+    def adjust_colors(image, color_adjustment):
+        if color_adjustment is not None:
+            logger.info("Change photo colors: %s", color_adjustment)
+            brightness = ImageEnhance.Brightness(image)
+            image = brightness.enhance(int(color_adjustment['brightness']) / 100)
+
+            color = ImageEnhance.Color(image)
+            image = color.enhance(int(color_adjustment['saturation']) / 100)
+
+            contrast = ImageEnhance.Contrast(image)
+            image = contrast.enhance(int(color_adjustment['contrast']) / 100)
+        return image
 
     @classmethod
     def add_watermark(cls, image, text='demo'):
