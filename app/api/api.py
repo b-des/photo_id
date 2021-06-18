@@ -103,7 +103,7 @@ def render_photo():
         ext = body['ext'] if 'ext' in body else config.DEFAULT_PHOTO_EXT
         color_adjustment = body['colorAdjustment'] if 'colorAdjustment' in body else None
         logger.info("Save generated image, uid: %s, request: %s", uid, body)
-        response = photo_service.save_generated_photo(uid=uid, hue=hue, corner=corner, ext=ext, color_adjustment=color_adjustment)
+        response = photo_service.save_generated_photo(uid=uid, hue=hue, corner=corner, ext=ext, colors=color_adjustment)
     else:
         # add preview image as base64 string to response dictionary
         remove_bg_result['base64'] = photo_service.get_result(size=preview_size).decode('ascii')
@@ -137,9 +137,10 @@ def save_base64_image():
     b64 = body['b64']
     ext = body['ext'] if 'ext' in body else config.DEFAULT_PHOTO_EXT
     size = body['size'] if 'size' in body else None
+    color_adjustment = body['colorAdjustment'] if 'colorAdjustment' in body else None
     logger.info("Save base64 image, uid: %s, ext: %s, size: %s", uid, ext, size)
     # save base64 image to local storage
-    result = PhotoService.save_base64_to_image(b64, host, uid, hue, corner, ext=ext, size=size)
+    result = PhotoService.save_base64_to_image(b64, host, uid, hue, corner, ext=ext, size=size, colors=color_adjustment)
     if result is None:
         return jsonify(error="Can't save base64 image", result=None), 400
     return jsonify(error="", result=result), 200
