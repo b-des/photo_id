@@ -1,6 +1,5 @@
 FROM python:3.8
 WORKDIR /usr/src/app
-COPY requirements.txt ./
 
 RUN apt-get -y update
 RUN apt-get install -y --fix-missing \
@@ -19,8 +18,11 @@ RUN apt-get install -y --fix-missing \
     python3-dev \
     python3-pip\
     zip \
-    && apt-get clean && rm -rf /tmp/* /var/tmp/*
+    && apt-get clean && rm -rf /tmp/* /var/tmp/* \
+
 RUN apt-get -qq -y install wkhtmltopdf
+
+COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt --upgrade
 
 COPY ./run.py .
