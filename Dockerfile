@@ -16,9 +16,7 @@ RUN apt-get install -y --fix-missing \
     liblapack-dev \
     libswscale-dev \
     pkg-config \
-    python-dev \
     python3-dev \
-    python-numpy \
     python3-pip\
     zip \
     && apt-get clean && rm -rf /tmp/* /var/tmp/*
