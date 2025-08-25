@@ -21,7 +21,7 @@ RUN apt-get install -y --fix-missing \
     zip \
     && apt-get clean && rm -rf /tmp/* /var/tmp/*
 RUN apt-get -qq -y install wkhtmltopdf
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt --upgrade
 
 COPY ./run.py .
 COPY ./app ./app
