@@ -17,8 +17,8 @@ RUN apt-get install -y --fix-missing \
     pkg-config \
     python3-dev \
     python3-pip\
-    zip \
-    && apt-get clean && rm -rf /tmp/* /var/tmp/* \
+    zip
+RUN apt-get clean && rm -rf /tmp/* /var/tmp/*
 
 RUN apt-get -qq -y install wkhtmltopdf
 
